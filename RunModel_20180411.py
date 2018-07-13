@@ -6,7 +6,7 @@ import seaborn as sns
 import pandas as pd
 
 #### model w/o relationships ###################################################
-flag = 0 # 0 = NoR model; 1 = Rmodel
+flag = 1 # 0 = NoR model; 1 = Rmodel
 
 ##### Run the model ############################################################
 OUT = np.zeros(tau.shape[0])
@@ -18,7 +18,13 @@ for i in np.arange(0,tau.shape[0]):
         OUT1[i]= C[i]
 
 ##### Save stuff ###############################################################
-###! AS CSV
-# np.savetxt("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_20180327_p_f.csv", OUT, delimiter=",")
 ###! AS NPY
-# np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_CTest.npy", OUT1)
+if flag == 0:
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelNoR_pf_20180411.npy", OUT)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelNoR_C_20180411.npy", OUT1)
+    print "model without relationships"
+
+if flag == 1:
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_pf_20180411.npy", OUT)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_C_20180411.npy", OUT1)
+    print "model with relationships"
