@@ -1,60 +1,89 @@
-### Load data ##################################################################
-###! Model outputs
-R_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_C_20180411.npy")
-R_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_pf_20180411.npy")
+#### Import packages ###########################################################
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import seaborn as sns
+import pandas as pd
 
-NoR_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelNoR_C_20180411.npy")
-NoR_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelNoR_pf_20180411.npy")
+##### Load data  ###############################################################
+NoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/timeSeriesNoR_pf.npy")
+NoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/timeSeriesNoR_C.npy")
+highNoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_highP.npy")
+highNoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_NoR_highC.npy")
+lowNoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_lowP.npy")
+lowNoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_NoR_lowC.npy")
+meanNoR_C =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_meanC.npy")
+meanNoR_P =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_meanP.npy")
 
-# Exclude first data point
-R_C = R_C1[1:]
-R_pf = R_pf1[1:]
+R_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/timeSeriesR_pf.npy")
+R_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/timeSeriesR_C.npy")
+highR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_highP.npy")
+highR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_R_highC.npy")
+lowR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_lowP.npy")
+lowR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_R_lowC.npy")
+meanR_C =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_meanC.npy")
+meanR_P =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_meanP.npy")
 
-NoR_C = NoR_C1[1:]
-NoR_pf = NoR_pf1[1:]
+### Load dataset ###############################################################
+df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/Laura/R3_data.xlsx', sheetname='Sheet1')
+#! load columns
+yr = df1['year'] #
+pe = df1['pe_MXNiat'] #
+pf = df1['pf_MXNiat'] #
+ct = df1['C_t'] #
+ssh = df1['essh_avg'] #
+ml = df1['ML'] #
+ys = df1['y_S'] #
 
-###! Load data
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/Laura/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
-
+df2 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/Laura/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
 # Load columns
-VolAll = df1['tons_DM']
-VolEtal = df1['tons_DM_etal']
-VolSR = df1['tons_DM_SR']
+VolAll = df2['tons_DM']
+PrAll = df2['priceMXNia_DM']
 
-PrAll = df1['priceMXNia_DM']
-PrEtal = df1['priceMXNia_DM_etal']
-PrSR = df1['priceMXNia_DM_SR']
+### New max time ###############################################################
+tmax = len(yr)
+x = np.arange(0,len(yr))
 
-#### PLOT ######################################################################
-###! Scatter plot
-x = range(100000)
-y = range(0,4)
+### font ######################################################################
+hfont = {'fontname':'Helvetica'}
+
+#####! PLOT MODEL  #############################################################
 fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.scatter(R_C, R_pf, s=30, c='b', marker="s", label='model with Rtt')
-ax1.scatter(NoR_C, NoR_pf, s=30, c='y', marker="o", label='model w/o Rtt')
-ax1.scatter(VolAll, PrEtal, s=30, c='g', marker="o", label='Others data')
-ax1.scatter(VolAll, PrSR, s=30, c='r', marker="s", label='SR data')
-plt.title("Price/catch: model and data", fontsize= 25)
-plt.xlabel("Catch in t",fontsize=20)
-plt.ylabel("Price for fishers in MXN",fontsize=20)
-plt.legend(loc="best", fontsize=10);
-# fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/PY/FIGS/R1_20180411.png',dpi=200)
+a, = plt.plot(meanR_P, label = "BEM+", color="orange")
+b, = plt.plot(meanNoR_P, label = "BEM", color="steelblue")
+c, = plt.plot(PrAll, label = "data", color = "indianred")
+plt.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
+plt.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# plt.title("Predicted and measured price for fishers [MXN]", fontsize= 25)
+# x-axis
+plt.xticks(np.arange(len(yr)), yr, rotation=45)
+plt.xlim(10,tmax-2)
+plt.xlabel("year",fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15)
+# y-axis
+plt.ylabel("price for fishers $MXN$",fontsize=20, **hfont)
+plt.legend(handles=[a,b,c], loc='best')
+# save and show
+# fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/PY/FIGS/R1_support1MC.png',dpi=500)
 plt.show()
 
-###! Time series plot
 fig = plt.figure()
-a, = plt.plot(R_C, label = "R catch")
-b, = plt.plot(NoR_C, label = "NoR catch")
-e, = plt.plot(VolAll, label = "data catch")
-c, = plt.plot(R_pf, label = "R pf")
-d, = plt.plot(NoR_pf, label = "NoR pf")
-f, = plt.plot(PrAll, label = "data price")
-plt.xlim(2,len(R_C)-2)
-#plt.ylim(0,3)
-plt.xlabel("yr",fontsize=20)
-plt.ylabel("variables",fontsize=20)
-plt.legend(handles=[a,b,c,d,e,f], loc='best')
-plt.title("Test", fontsize= 25)
-#fig.savefig('./Dropbox/PhD/Deliverables/3_March/Week1/CpfPred_Rtt.png',dpi=200)
+a, = plt.plot(meanR_C, label = "BEM+", color="orange")
+b, = plt.plot(meanNoR_C, label = "BEM", color="steelblue")
+c, = plt.plot(VolAll, label = "data", color= "indianred")
+plt.fill_between(x, highR_C, lowR_C, where = highNoR_C >= lowNoR_C, facecolor='orange', alpha= 0.3, zorder = 0)
+plt.fill_between(x, highNoR_C, lowNoR_C, where = highNoR_C >= lowNoR_C, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# title
+# plt.title("Predicted and measured catch [t]", fontsize= 25)
+# x-axis
+plt.xticks(np.arange(len(yr)), yr, rotation=45)
+plt.xlim(10,tmax-2)
+plt.xlabel("year",fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15)
+# y-axis
+plt.ylabel("catch $tons$",fontsize=20, **hfont)
+# legend
+# plt.legend(handles=[a,b,c], loc='best')
+# save and show
+# fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/PY/FIGS/R1_support2MC.png',dpi=200)
 plt.show()
