@@ -7,7 +7,7 @@ import pandas as pd
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
-tmax = 30 # model run, years
+tmax = 27 # model run, years
 b1 = 41.750 # isotherm depth
 b2 = -5.696 # isotherm depth
 b3 = 16.397 # isotherm depth

@@ -1,3 +1,4 @@
+
 ##### Initiate arrays ##########################################################
 sim = np.arange(0,100) # number of simulations
 x = np.zeros(12) # set array to save parameters
