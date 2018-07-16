@@ -1,10 +1,10 @@
 ### Load data ##################################################################
 ###! Model outputs
-R_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_C_20180411.npy")
-R_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelR_pf_20180411.npy")
+R_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelR_C_20180411.npy")
+R_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelR_pf_20180411.npy")
 
-NoR_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelNoR_C_20180411.npy")
-NoR_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/ModelNoR_pf_20180411.npy")
+NoR_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelNoR_C_20180411.npy")
+NoR_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelNoR_pf_20180411.npy")
 
 # Exclude first data point
 R_C = R_C1[1:]
@@ -39,7 +39,7 @@ plt.title("Price/catch: model and data", fontsize= 25)
 plt.xlabel("Catch in t",fontsize=20)
 plt.ylabel("Price for fishers in MXN",fontsize=20)
 plt.legend(loc="best", fontsize=10);
-# fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/PY/FIGS/R1_20180411.png',dpi=200)
+# fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/FIGS/R1_20180411.png',dpi=200)
 plt.show()
 
 ###! Time series plot
