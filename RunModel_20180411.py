@@ -6,7 +6,7 @@ import seaborn as sns
 import pandas as pd
 
 #### model w/o relationships ###################################################
-flag = 1 # 0 = NoR model; 1 = Rmodel
+flag = 0 # 0 = NoR model; 1 = Rmodel
 
 ##### Run the model ############################################################
 OUT = np.zeros(tau.shape[0])

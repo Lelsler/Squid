@@ -37,15 +37,15 @@ x = range(100000)
 y = range(0,4)
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.scatter(meanR_C, meanR_P, s=30, c='b', marker="o", label='BEM+')
-ax1.scatter(meanNoR_C, meanNoR_P, s=30, c='y', marker="o", label='BEM')
-ax1.scatter(VolSR, PrSR, s=30, c='r', marker="s", label='SR data')
-ax1.scatter(VolAll, PrAll, s=30, c='g', marker="s", label='All offices data')
+ax1.scatter(meanR_C, meanR_P, s=30, color="orange", marker="o", label='BEM+')
+ax1.scatter(meanNoR_C, meanNoR_P, s=30, color="steelblue", marker="o", label='BEM')
+ax1.scatter(VolSR, PrSR, s=30, color="indianred", marker="s", label='SR data')
+ax1.scatter(VolAll, PrAll, s=30, color="maroon", marker="s", label='All offices data')
 # x-axis
 plt.xlabel("Catch $tons$",fontsize=20, **hfont)
 plt.xlim(1,1E5)
 # y-axis
-plt.ylabel("Price for fishers in MXN",fontsize=20, **hfont)
+plt.ylabel("Price for fishers $MXN$",fontsize=20, **hfont)
 plt.ylim(1,)
 # legend
 plt.legend(loc="best", fontsize=10);
