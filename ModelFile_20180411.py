@@ -6,7 +6,7 @@ from pandas import *
 flag = 1 # 0 = NoR model; 1 = Rmodel
 
 #### Load dataset  #############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/Laura/R3_data.xlsx', sheetname='Sheet1')
+df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
 #! load columns
 y = df1['year'] #
 pe = df1['pe_MXNiat'] #

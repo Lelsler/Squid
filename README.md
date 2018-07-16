@@ -1,3 +1,0 @@
-# Squid
-
-add some information

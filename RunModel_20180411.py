@@ -55,16 +55,16 @@ for h in range(0,y.shape[0]): # calculate the 95% confidence interval
 
 ##### Save data  ###############################################################
 if flag == 0:
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_NoR_lowC.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_NoR_highC.npy", highC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_lowP.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_highP.npy", highP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_meanP.npy", meanP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_NoR_meanC.npy", meanC)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy", lowC)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy", highC)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy", lowP)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy", highP)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy", meanP)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy", meanC)
 if flag == 1:
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_R_lowC.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support2_95_R_highC.npy", highC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_lowP.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_highP.npy", highP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_meanP.npy", meanP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/PY/DATA/R1support1_95_R_meanC.npy", meanC)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy", lowC)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy", highC)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy", lowP)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy", highP)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy", meanP)
+    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
