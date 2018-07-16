@@ -6,7 +6,7 @@ import seaborn as sns
 import pandas as pd
 
 #### model w/o relationships ###################################################
-flag = 0 # 0 = NoR model; 1 = Rmodel
+flag = 1 # 0 = NoR model; 1 = Rmodel
 
 ##### Run the model ############################################################
 OUT = np.zeros(tau.shape[0])
@@ -20,11 +20,11 @@ for i in np.arange(0,tau.shape[0]):
 ##### Save stuff ###############################################################
 ###! AS NPY
 if flag == 0:
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelNoR_pf_20180411.npy", OUT)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelNoR_C_20180411.npy", OUT1)
+    np.save("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelNoR_pf_20180411.npy", OUT)
+    np.save("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelNoR_C_20180411.npy", OUT1)
     print "model without relationships"
 
 if flag == 1:
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelR_pf_20180411.npy", OUT)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelR_C_20180411.npy", OUT1)
+    np.save("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelR_pf_20180411.npy", OUT)
+    np.save("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelR_C_20180411.npy", OUT1)
     print "model with relationships"

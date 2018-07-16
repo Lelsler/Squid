@@ -1,10 +1,14 @@
 ### Load data ##################################################################
 ###! Model outputs
-R_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelR_C_20180411.npy")
-R_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelR_pf_20180411.npy")
+R_C1 = np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelR_C_20180411.npy")
+R_pf1 = np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelR_pf_20180411.npy")
+meanNoR_C =np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy")
+meanNoR_P =np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
 
-NoR_C1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelNoR_C_20180411.npy")
-NoR_pf1 = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/DATA/ModelNoR_pf_20180411.npy")
+NoR_C1 = np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelNoR_C_20180411.npy")
+NoR_pf1 = np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/ModelNoR_pf_20180411.npy")
+meanR_C =np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy")
+meanR_P =np.load("/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
 
 # Exclude first data point
 R_C = R_C1[1:]
@@ -14,7 +18,7 @@ NoR_C = NoR_C1[1:]
 NoR_pf = NoR_pf1[1:]
 
 ###! Load data
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/Laura/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
+df1 = pd.read_excel('/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
 
 # Load columns
 VolAll = df1['tons_DM']
@@ -26,20 +30,27 @@ PrEtal = df1['priceMXNia_DM_etal']
 PrSR = df1['priceMXNia_DM_SR']
 
 #### PLOT ######################################################################
+hfont = {'fontname':'Helvetica'}
+
 ###! Scatter plot
 x = range(100000)
 y = range(0,4)
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.scatter(R_C, R_pf, s=30, c='b', marker="s", label='model with Rtt')
-ax1.scatter(NoR_C, NoR_pf, s=30, c='y', marker="o", label='model w/o Rtt')
-ax1.scatter(VolAll, PrEtal, s=30, c='g', marker="o", label='Others data')
-ax1.scatter(VolAll, PrSR, s=30, c='r', marker="s", label='SR data')
-plt.title("Price/catch: model and data", fontsize= 25)
-plt.xlabel("Catch in t",fontsize=20)
-plt.ylabel("Price for fishers in MXN",fontsize=20)
+ax1.scatter(meanR_C, meanR_P, s=30, c='b', marker="o", label='BEM+')
+ax1.scatter(meanNoR_C, meanNoR_P, s=30, c='y', marker="o", label='BEM')
+ax1.scatter(VolSR, PrSR, s=30, c='r', marker="s", label='SR data')
+ax1.scatter(VolAll, PrAll, s=30, c='g', marker="s", label='All offices data')
+# x-axis
+plt.xlabel("Catch $tons$",fontsize=20, **hfont)
+plt.xlim(1,1E5)
+# y-axis
+plt.ylabel("Price for fishers in MXN",fontsize=20, **hfont)
+plt.ylim(1,)
+# legend
 plt.legend(loc="best", fontsize=10);
-# fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/Old/PY/FIGS/R1_20180411.png',dpi=200)
+# save &show stuff
+# fig.savefig('/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/FIGS/R1_20180411.png',dpi=200)
 plt.show()
 
 ###! Time series plot
@@ -56,5 +67,4 @@ plt.xlabel("yr",fontsize=20)
 plt.ylabel("variables",fontsize=20)
 plt.legend(handles=[a,b,c,d,e,f], loc='best')
 plt.title("Test", fontsize= 25)
-#fig.savefig('./Dropbox/PhD/Deliverables/3_March/Week1/CpfPred_Rtt.png',dpi=200)
 plt.show()
