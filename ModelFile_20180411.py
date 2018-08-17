@@ -6,7 +6,7 @@ from pandas import *
 flag = 1 # 0 = NoR model; 1 = Rmodel
 
 #### Load dataset  #############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+df1 = pd.read_excel('./DATA/R3_data.xlsx', sheet_name='Sheet1')
 #! load columns
 y = df1['year'] #
 pe = df1['pe_MXNiat'] #
@@ -38,10 +38,10 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
             y_S[t]= ys[t]
         if y_S[t] > 1:
             y_S[t] = 1
-            print "yS high"
+            print("yS high")
         elif y_S[t] < 0:
             y_S[t] = 0
-            print "yS low"
+            print("yS low")
 
         # trader cooperation
         R_tt[t] = (1-y_S[t])
@@ -55,10 +55,10 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
         E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
         if E[t] > 1:
             E[t] = 1
-            print "E high"
+            print("E high")
         elif E[t] < 0:
             E[t] = 0
-            print "E low"
+            print("E low")
 
         # catch
         C[t] = q[t] *E[t] *S[t]
@@ -78,5 +78,5 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
         # revenue of fishers
         R[t] = C[t] *p_f[t] - c_t[t-1] *(E[t-1]/(B_h+B_f))
 
-        print t, tau[t], ML[t], q[t], y_S[t], S[t], c_t[t], E[t], C[t], p_e[t], p_f[t], R[t]
+        print(t, tau[t], ML[t], q[t], y_S[t], S[t], c_t[t], E[t], C[t], p_e[t], p_f[t], R[t])
     return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R

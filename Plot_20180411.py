@@ -2,30 +2,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import seaborn as sns
 import pandas as pd
 
 ##### Load data  ###############################################################
-NoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
-NoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
-highNoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
-highNoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy")
-lowNoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy")
-lowNoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy")
-meanNoR_C =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy")
-meanNoR_P =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
+NoR_pf = np.load("./DATA/timeSeriesNoR_pf.npy")
+NoR_C = np.load("./DATA/timeSeriesNoR_C.npy")
+highNoR_pf = np.load("./DATA/R1support1_95_NoR_highP.npy")
+highNoR_C = np.load("./DATA/R1support2_95_NoR_highC.npy")
+lowNoR_pf = np.load("./DATA/R1support1_95_NoR_lowP.npy")
+lowNoR_C = np.load("./DATA/R1support2_95_NoR_lowC.npy")
+meanNoR_C =np.load("./DATA/R1support1_95_NoR_meanC.npy")
+meanNoR_P =np.load("./DATA/R1support1_95_NoR_meanP.npy")
 
-R_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesR_pf.npy")
-R_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesR_C.npy")
-highR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
-highR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy")
-lowR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy")
-lowR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
-meanR_C =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy")
-meanR_P =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
+R_pf = np.load("./DATA/timeSeriesR_pf.npy")
+R_C = np.load("./DATA/timeSeriesR_C.npy")
+highR_pf = np.load("./DATA/R1support1_95_R_highP.npy")
+highR_C = np.load("./DATA/R1support2_95_R_highC.npy")
+lowR_pf = np.load("./DATA/R1support1_95_R_lowP.npy")
+lowR_C = np.load("./DATA/R1support2_95_R_lowC.npy")
+meanR_C =np.load("./DATA/R1support1_95_R_meanC.npy")
+meanR_P =np.load("./DATA/R1support1_95_R_meanP.npy")
 
 ### Load dataset ###############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+df1 = pd.read_excel('./DATA/R3_data.xlsx', sheet_name='Sheet1')
 #! load columns
 yr = df1['year'] #
 pe = df1['pe_MXNiat'] #
@@ -35,7 +34,7 @@ ssh = df1['essh_avg'] #
 ml = df1['ML'] #
 ys = df1['y_S'] #
 
-df2 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
+df2 = pd.read_excel('./DATA/PriceVolDataCorrected.xlsx', sheet_name='Sheet1')
 # Load columns
 VolAll = df2['tons_DM']
 PrAll = df2['priceMXNia_DM']
