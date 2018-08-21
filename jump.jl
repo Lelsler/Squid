@@ -65,28 +65,27 @@ model = JuMP.Model(solver = IpoptSolver(max_iter=10000,print_frequency_iter=500,
 
 #@variable(model, 20.0 <= tau[t=1:tmax] <= 80.0) # temperature
 @variable(model, 4000.0 <= p_e[t=1:tmax] <= 100_000.0) # export price
-#@variable(model, q[t=1:tmax]) # catchability squid population
+@variable(model, q[t=1:tmax]) # catchability squid population
 #@variable(model, 0.0 <= y_S[t=1:tmax] <= 1.0) # Proportion of squid migration from initial fishing grounds
 #@variable(model, R_tt[t=1:tmax]) # trader cooperation
 # c_t is per trip so we need to upscale E hr > fisher > trip
 #@variable(model, Escal[t=1:tmax]) # fishing effort
-#@variable(model, 0.0 <= E[t=1:tmax] <= 1.0) # fishing effort
-#@variable(model, S[t=1:tmax] >= 0.0) # size of the squid population 18000 , 1200000
-#@variable(model, C[t=1:tmax]  >= 0.0) # squid catch 10% of S
+@variable(model, 0.0 <= E[t=1:tmax] <= 1.0) # fishing effort
+@variable(model, S[t=1:tmax] >= 0.0) # size of the squid population 18000 , 1200000
+@variable(model, C[t=1:tmax]  >= 0.0) # squid catch 10% of S
 #@variable(model, p_min[t=1:tmax] >= 0.0) # minimum wage 28_000_000
 @variable(model, p_f[t=1:tmax]) # price for fishers
 #@variable(model, dataP[t=1:tmax])
 #@variable(model, dataC[t=1:tmax])
 @variable(model, match)
 
-@NLparameter(model, C[t=1:tmax] == VolAll[t]); # squid catch
 #@constraint(model, [t=1:tmax], tau[t] == b1+b2*cos.(t)+b3*sin.(t));
 @NLconstraint(model, [t=1:tmax], p_e[t] == gamma*(C[t])^(-beta));
 #@NLconstraint(model, [t=1:tmax-1], Escal[t+1] == E[t]+p_f[t]*C[t]-c_t*(E[t]/(B_h+B_f)));
 #@constraint(model, [t=1:tmax], E[t] == h1*Escal[t]+h2);
 #@constraint(model, [t=1:tmax], R_tt[t] == 1-y_S[t]);
 #@NLconstraint(model, [t=1:tmax-1], S[t+1] == S[t]+g*S[t]*(1-(S[t]/K))-C[t]);
-#@NLconstraint(model, [t=1:tmax], C[t] == q[t]*E[t]*S[t]);
+@NLconstraint(model, [t=1:tmax], C[t] == q[t]*E[t]*S[t]);
 #@NLconstraint(model, [t=1:tmax], y_S[t] == a1*exp(tau[t]-b1));
 #@NLconstraint(model, [t=1:tmax], q[t] == l1*tau[t]+l2);
 #First Model
@@ -106,11 +105,9 @@ model = JuMP.Model(solver = IpoptSolver(max_iter=10000,print_frequency_iter=500,
 #@constraint(model, q[1] == q0); # squid catchability
 #@constraint(model, E[1] == E0); # fishing effort
 #@constraint(model, S[1] == S0); # size of the squid population
-#Minimise ther differences between our model and the data
-#@NLconstraint(model, match == sum(abs(p_f[t] - dataP[t])+abs(C[t] - dataC[t]) for t in 1:tmax));
-#@constraint(model, match == sum(plus(p_f[t] - PrAll[t]) for t in 1:tmax));
-@NLconstraint(model, match == sum(abs(p_f[t] - PrAll[t])^2 for t in 1:tmax));
-#@NLconstraint(model, match == sum(p_f[t]*dataP[t] for t in 1:tmax));
+
+#Minimise the Least Squares differences between our model and the data
+@NLconstraint(model, match == sum(abs(p_f[t] - PrAll[t])^2+abs(C[t] - VolAll[t])^2 for t in 1:tmax));
 @objective(model, Min, match);
 
 # Add ML, R
