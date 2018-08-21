@@ -3,9 +3,17 @@ using Ipopt
 using DataFrames
 import XLSX
 
+abstract type Model end
+struct Direct <: Model end
+struct Migration <: Model end
+
+#run = Direct();
+run = Migration();
+
 #These two are interdependent in the model and can be included in the future
 #a1 = 1/3.4e7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
 #K = 1208770.0 # carrying capacity in t
+# If you clamp l1, l2, the values of E will be pushed higher.
 # These are the only real constants
 f = 40.0 # l of fuel per trip
 B_h = 7.203 # hours per fisher
@@ -54,11 +62,10 @@ model = JuMP.Model(solver = IpoptSolver(max_iter=10000,print_frequency_iter=500,
 @variable(model, 1000.0 <= c_p <= 2148.0) # cost of processing, MXNia/t
 @variable(model, 0.0 <= g <= 3.2) # population growth rate
 @variable(model, 20000.0 <= gamma <= 51000.0) # maximum demand, t
-#@variable(model, 11956952.0 <= w_m <= 28108539.0) # min wage per hour all fleet
 #@variable(model, h1) # E scale
 #@variable(model, h2) # E scale
-@NLparameter(model, l1 == -0.0028) # q scale
-@NLparameter(model, l2 == 0.1667) # q scale
+@variable(model, l1, start = -0.0028) # q scale
+@variable(model, l2, start = 0.1667) # q scale
 #testing
 @variable(model, a1, start=1/3.4e7)
 @variable(model, K, start=1208770.0)
@@ -72,10 +79,14 @@ model = JuMP.Model(solver = IpoptSolver(max_iter=10000,print_frequency_iter=500,
 @variable(model, 0.0 <= E[t=1:tmax] <= 1.0) # fishing effort
 @variable(model, S[t=1:tmax] >= 0.0) # size of the squid population 18000 , 1200000
 @variable(model, C[t=1:tmax]  >= 0.0) # squid catch 10% of S
-#@variable(model, R_tt[t=1:tmax]) # trader cooperation
-#@variable(model, p_min[t=1:tmax] >= 0.0) # minimum wage 28_000_000
 @variable(model, p_f[t=1:tmax]) # price for fishers
 @variable(model, match)
+
+if typeof(run) == Migration
+    @variable(model, 11_956_952.0 <= w_m <= 28_108_539.0) # min wage per hour all fleet
+    @variable(model, 0.0 <= R_tt[t=1:tmax] <= 1.0) # trader cooperation
+    @variable(model, p_min[t=1:tmax] >= 0.0) # minimum wage 28_000_000 NOTE: This is quite low it seems
+end
 
 @constraint(model, [t=1:tmax], tau[t] == b1+b2*cos.(t)+b3*sin.(t));
 @NLconstraint(model, [t=1:tmax], p_e[t] == gamma*(C[t])^(-beta));
@@ -85,13 +96,15 @@ model = JuMP.Model(solver = IpoptSolver(max_iter=10000,print_frequency_iter=500,
 @NLconstraint(model, [t=1:tmax], C[t] == q[t]*E[t]*S[t]);
 @NLconstraint(model, [t=1:tmax], y_S[t] == a1*exp(tau[t]-b1));
 @NLconstraint(model, [t=1:tmax], q[t] == l1*tau[t]+l2);
-#First Model
-@constraint(model, [t=1:tmax], p_f[t] == p_e[t]-c_p);
-#Second model
-#@NLconstraint(model, [t=1:tmax], p_min[t] == (E[t]*w_m)/C[t]);
-#@constraint(model, [t=1:tmax], p_f[t] == (p_e[t]-c_p)*(1-R_tt[t])+R_tt[t]*p_min[t]);
-#@constraint(model, [t=1:tmax], R_tt[t] == 1-y_S[t]);
-
+if typeof(run) == Direct
+    #First Model
+    @constraint(model, [t=1:tmax], p_f[t] == p_e[t]-c_p);
+else
+    #Second model
+    @NLconstraint(model, [t=1:tmax], p_min[t] == (E[t]*w_m)/C[t]);
+    @constraint(model, [t=1:tmax], R_tt[t] == 1-y_S[t]);
+    @constraint(model, [t=1:tmax], p_f[t] == (p_e[t]-c_p)*(1-R_tt[t])+R_tt[t]*p_min[t]);
+end
 
 #@constraint(model, C[1] == VolAll[1]); # squid catch
 #@constraint(model, p_f[1] == PrAll[1]); # max p_f datamares
