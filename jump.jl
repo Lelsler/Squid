@@ -81,7 +81,7 @@ end
 K0 = getK(b10,b20,b30,Cmax,CmaxIdx);
 
 
-@variable(model, 38.75 <= b1 <= 42.1, start = b10) # isotherm depth depth (est)
+@variable(model, b1, start = b10) # isotherm depth depth (est)
 @variable(model, b2, start = b20) # isotherm amplitude (est)
 @variable(model, b3, start = b30) # isotherm seasonal period (est)
 @variable(model, 0.0 <= beta <= 1.0) # slope of demand-price function
@@ -147,3 +147,118 @@ status = solve(model);
 
 
 # Add ML, R
+
+function bound(var)
+    if typeof(getvalue(var)) <: Array
+        if sum(getlowerbound(var))/length(var)≈getlowerbound(var)[1]
+            #The bound is constant
+            if !(getlowerbound(var)[1] <= minimum(getvalue(var)) && maximum(getvalue(var)) <= getupperbound(var)[1])
+                println("$(getlowerbound(var)[1]) <= $(var) <= $(getupperbound(var)[1]) ==> $(extrema(getvalue(var)))");
+            end
+        else
+            #The bound is variable
+            for vv in var
+                if !(getlowerbound(var)[vv] <= getvalue(var)[vv] <= getupperbound(var)[vv])
+                    println("$(getlowerbound(var)[vv]) <= $(var)[t] <= $(getupperbound(var)[vv]) ==> $(getvalue(var)[vv])");
+                end
+
+            end
+        end
+    else
+        if !(getlowerbound(var) <= getvalue(var) <= getupperbound(var))
+            println("$(getlowerbound(var)) <= $(var) <= $(getupperbound(var)) ==> $(getvalue(var))");
+        end
+    end
+end
+
+# Spits out restoration failure bounds.
+function list_failures()
+    println("Out of bounds:")
+    bound(b1);
+    bound(b2);
+    bound(b3);
+    bound(beta);
+    bound(c_p);
+    bound(g);
+    bound(gamma);
+    bound(K);
+    bound(maxTau);
+    bound(minTau);
+    bound(p_e);
+    bound(q);
+    bound(y_S);
+    bound(E);
+    bound(S);
+    bound(C);
+    bound(p_f);
+    if typeof(run) == Migration
+        bound(w_m);
+        bound(R_tt);
+        bound(p_min);
+    end
+
+    println("Constraints not met:")
+    if getvalue(maxTau) != getMaxTau(getvalue(b1),getvalue(b2),getvalue(b3))
+        println("- maxTau ==> expected: $(maximum(getvalue(tau))), current: $(getvalue(maxTau))")
+    end
+    if getvalue(minTau) != getMinTau(getvalue(b1),getvalue(b2),getvalue(b3))
+        println("- minTau ==> expected: $(minimum(getvalue(tau))), current: $(getvalue(minTau))")
+    end
+    if getvalue(K) != getK(getvalue(b1),getvalue(b2),getvalue(b3),Cmax,CmaxIdx)
+        println("- K ==> expected: $(getK(getvalue(b1),getvalue(b2),getvalue(b3),Cmax,CmaxIdx)), current: $(getvalue(K))")
+    end
+    for t in tmax
+        if getvalue(tau)[t] != tauh(getvalue(b1),getvalue(b2),getvalue(b3),t)
+            println("- tau[$(t)] ==> expected: $(tauh(getvalue(b1),getvalue(b2),getvalue(b3),t)), current: $(getvalue(tau)[t])")
+        end
+    end
+    for t in tmax
+        if getvalue(p_e)[t] != getvalue(gamma)*getvalue(C)[t]^(-getvalue(beta))
+            println("- p_e[$(t)] ==> expected: $(getvalue(gamma)*getvalue(C)[t]^(-getvalue(beta))), current: $(getvalue(p_e)[t])")
+        end
+    end
+    for t in tmax-1
+        if getvalue(S)[t+1] != getvalue(S)[t]+getvalue(g)*getvalue(S)[t]*(1-(getvalue(S)[t]/getvalue(K)))-getvalue(C)[t]
+            println("- S[$(t+1)] ==> expected: $(getvalue(S)[t]+getvalue(g)*getvalue(S)[t]*(1-(getvalue(S)[t]/getvalue(K)))-getvalue(C)[t]), current: $(getvalue(S)[t+1])")
+        end
+    end
+    for t in tmax
+        if getvalue(C)[t] != getvalue(q)[t]*getvalue(E)[t]*getvalue(S)[t]
+            println("- C[$(t)] ==> expected: $(getvalue(q)[t]*getvalue(E)[t]*getvalue(S)[t]), current: $(getvalue(C)[t])")
+        end
+    end
+    for t in tmax
+        if getvalue(y_S)[t] != exp(getvalue(tau)[t]-getvalue(maxTau))
+            println("- y_S[$(t)] ==> expected: $(exp(getvalue(tau)[t]-getvalue(maxTau))
+), current: $(getvalue(y_S)[t])")
+        end
+    end
+    for t in tmax
+        if getvalue(q)[t] != 0.1*((getvalue(tau)[t]-getvalue(minTau))/(getvalue(maxTau)-getvalue(minTau)))
+            println("- q[$(t)] ==> expected: $(0.1*((getvalue(tau)[t]-getvalue(minTau))/(getvalue(maxTau)-getvalue(minTau)))), current: $(getvalue(q)[t])")
+        end
+    end
+    if typeof(run) == Direct
+        for t in tmax
+            if getvalue(p_f)[t] != getvalue(p_e)[t]-getvalue(c_p)
+                println("- p_f[$(t)] ==> expected: $(getvalue(p_e)[t]-getvalue(c_p)), current: $(getvalue(p_f)[t])")
+            end
+        end
+    else
+        for t in tmax
+            if getvalue(p_f)[t] != (getvalue(p_e)[t]-getvalue(c_p))*(1-getvalue(R_tt)[t])+getvalue(R_tt)[t]*getvalue(p_min)[t]
+                println("- p_f[$(t)] ==> expected: $((getvalue(p_e)[t]-getvalue(c_p))*(1-getvalue(R_tt)[t])+getvalue(R_tt)[t]*getvalue(p_min)[t]), current: $(getvalue(p_f)[t])")
+            end
+        end
+        for t in tmax
+            if getvalue(p_min)[t] != (getvalue(E)[t]*getvalue(w_m))/getvalue(C)[t]
+                println("- p_min[$(t)] ==> expected: $((getvalue(E)[t]*getvalue(w_m))/getvalue(C)[t]), current: $(getvalue(p_min)[t])")
+            end
+        end
+        for t in tmax
+            if getvalue(R_tt)[t] != 1-getvalue(y_S)[t]
+                println("- R_tt[$(t)] ==> expected: $(1-getvalue(y_S)[t]), current: $(getvalue(R_tt)[t])")
+            end
+        end
+    end
+end
