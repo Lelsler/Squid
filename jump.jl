@@ -14,6 +14,7 @@ run = Migration();
 b10 = 41.75; #mean depth
 b20 = -5.696; #amplitude
 b30 = 16.379; #period of seasonal cycles
+w0 = 0.05; # test frequency
 B_h = 7.203 # hours per fisher
 B_f = 2.0 # fisher per panga
 f = 40.0 # l of fuel per trip
@@ -95,8 +96,8 @@ K0 = getK(b10,b20,b30,Cmax,CmaxIdx);
 @variable(model, K, start=K0) # Carrying capacity in t. Cmax * q
 
 @variable(model, 20.0 <= tau[t=1:tmax] <= 80.0) # temperature
-@variable(model, maxTau, start=tauUpper) # q scale
-@variable(model, minTau, start=tauLower) # q scale
+@variable(model, maxTau <= 80.0, start=tauUpper) # q scale
+@variable(model, minTau >= 20.0, start=tauLower) # q scale
 
 @variable(model, 4_000.0 <= p_e[t=1:tmax] <= 100_000.0) # export price
 @variable(model, 0.0 <= q[t=1:tmax] <= 0.1) # catchability squid population
@@ -117,9 +118,10 @@ end
 
 @NLconstraint(model, maxTau == getMaxTau(b1,b2,b3)); # q scale
 @NLconstraint(model, minTau == getMinTau(b1,b2,b3)); # q scale
+@constraint(model, minTau <= maxTau); # q scale
 #@NLconstraint(model, a1 == 1/exp(maxTau-b1));
 @NLconstraint(model, K == getK(b1,b2,b3,Cmax,CmaxIdx));
-@constraint(model, [t=1:tmax], tau[t] == tauh(b1,b2,b3,t));
+@NLconstraint(model, [t=1:tmax], tau[t] == tauh(b1,b2,b3,t));
 @NLconstraint(model, [t=1:tmax], p_e[t] == gamma*(C[t])^(-beta));
 #@NLconstraint(model, [t=1:tmax-1], Escal[t+1] == E[t]+p_f[t]*C[t]-c_t*(E[t]/(B_h+B_f)));
 #@constraint(model, [t=1:tmax], E[t] == h1*Escal[t]+h2);
@@ -199,10 +201,10 @@ function list_failures()
 
     println("Constraints not met:")
     if getvalue(maxTau) != getMaxTau(getvalue(b1),getvalue(b2),getvalue(b3))
-        println("- maxTau ==> expected: $(maximum(getvalue(tau))), current: $(getvalue(maxTau))")
+        println("- maxTau ==> expected: $(getMaxTau(getvalue(b1),getvalue(b2),getvalue(b3))), current: $(getvalue(maxTau))")
     end
     if getvalue(minTau) != getMinTau(getvalue(b1),getvalue(b2),getvalue(b3))
-        println("- minTau ==> expected: $(minimum(getvalue(tau))), current: $(getvalue(minTau))")
+        println("- minTau ==> expected: $(getMinTau(getvalue(b1),getvalue(b2),getvalue(b3))), current: $(getvalue(minTau))")
     end
     if getvalue(K) != getK(getvalue(b1),getvalue(b2),getvalue(b3),Cmax,CmaxIdx)
         println("- K ==> expected: $(getK(getvalue(b1),getvalue(b2),getvalue(b3),Cmax,CmaxIdx)), current: $(getvalue(K))")
@@ -261,4 +263,4 @@ function list_failures()
             end
         end
     end
-end
+end;
