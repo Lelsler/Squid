@@ -61,6 +61,7 @@ plt.ylim(1,)
 plt.legend(loc="best", fontsize=14);
 # save &show stuff
 # fig.savefig('/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/FIGS/R1_20180411.png',dpi=200)
+# fig.savefig('/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/FIGS/R1_20180411.png',dpi=200)
 plt.show()
 
 ###! Time series plot
