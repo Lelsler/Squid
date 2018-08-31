@@ -1,5 +1,10 @@
 ### Load packages ##############################################################
 from scipy import stats
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import seaborn as sns
+import pandas as pd
 
 ### Load data ##################################################################
 ###! Model outputs
@@ -44,14 +49,16 @@ ax1.scatter(meanR_C, meanR_P, s=30, color="orange", marker="o", label='BEM+')
 ax1.scatter(meanNoR_C, meanNoR_P, s=30, color="steelblue", marker="o", label='BEM')
 ax1.scatter(VolSR, PrSR, s=30, color="indianred", marker="s", label='SR data')
 ax1.scatter(VolAll, PrAll, s=30, color="maroon", marker="s", label='All offices data')
+# both axis
+plt.tick_params(axis='both', which='major', labelsize=12)
 # x-axis
-plt.xlabel("Catch $tons$",fontsize=20, **hfont)
+plt.xlabel("Catch $tons$",fontsize=22, **hfont)
 plt.xlim(1,1E5)
 # y-axis
-plt.ylabel("Price for fishers $MXN$",fontsize=20, **hfont)
+plt.ylabel("Price for fishers $MXN$",fontsize=22, **hfont)
 plt.ylim(1,)
 # legend
-plt.legend(loc="best", fontsize=10);
+plt.legend(loc="best", fontsize=14);
 # save &show stuff
 # fig.savefig('/Users/lauraelsler/Dropbox/PhD/Resources/P2/Squid/CODE/Squid/FIGS/R1_20180411.png',dpi=200)
 plt.show()
