@@ -6,7 +6,7 @@ import pandas as pd
 from pylab import *
 
 ###### LOAD DATA ###############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
 
 # load columns
 yr = df1['year']
@@ -17,7 +17,7 @@ T = df1['essh_avg']
 p = pf/pe
 
 ###### LOAD DATA ###############################################################
-df2 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/composite_outside_catches.xlsx', sheetname='composite_outside_catches')
+df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/composite_outside_catches.xlsx', sheetname='composite_outside_catches')
 
 # load columns
 yr2 = df2['year']
@@ -34,7 +34,7 @@ cb = fig.colorbar(colmap)
 ax.set_xlabel('relative price pf/pe$')
 ax.set_ylabel('catch')
 ax.set_zlabel('sea surface height')
-# fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/PY/FIGS/R3_20180411.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R3_20180411.png',dpi=500)
 plt.show()
 
 ###! Time series plot
@@ -59,7 +59,7 @@ ax2.yaxis.set_label_position("right")
 ax2.set_ylabel("Catches $tons$", rotation=270, color='k', labelpad=15, fontsize=20, **hfont)
 # for the legend, remember that we used two different axes so, we need to build the legend manually
 plt.legend([line1, line2, line3], ["SSH", "Total catches", "Catches outside Gulf"], fontsize= 11)
-# savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/FIGS/R3_support2.png',dpi=500)
+# savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R3_support2.png',dpi=500)
 show()
 
 ###### STATISTICS #################################################################

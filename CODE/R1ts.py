@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
+import scipy.stats as st
+from pandas import *
+
+#### Model w/o relationships ###################################################
+flag = 1 # 0 = NoR model; 1 = Rmodel
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
@@ -16,18 +21,20 @@ n2 = 49.811 # ML, intersect
 l1 = -0.0028 # q, slope
 l2 = 0.1667 # q, intersect
 a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
-K = 1208770 # carrying capacity in t
-m = 5492603.58 # cost per unit of transport all boats, MXN/trip
-f = 40 # l of fuel per trip
+gamma = 49200 # maximum demand
+beta = 0.0736 # slope of demand-price function
+w_m = 13355164 # min wage per hour all fleet
+c_p = 1776.25 # cost of processing
+c_t = 156076110 # cost of fishing
+m = 156076110 # cost per unit of transport all boats, MXN/trip
+f = 1 # l of fuel per trip
+
 B_h = 7.203 # hours per fisher
 B_f = 2 # fisher per panga
 h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
-gamma = 49200 # maximum demand, t
-beta = 0.0736 # slope of demand-price function
-c_p = 1776.25 # cost of processing, MXNia/t
-w_m = 13355164 # min wage per hour all fleet
 flag = 3 # this gives an error if its not been changed previously to the right model
 
 ### Variables ##################################################################
@@ -48,31 +55,24 @@ p_f = np.zeros(tmax) # price for fishers
 R = np.zeros(tmax) # revenue of fishers
 
 ### Initial values #############################################################
-tau[0] = 42. # temperature
+tau[0] = 42. # isotherm depth
 q[0] = 0.01 # squid catchability
 y_S[0] = 0.5 # proportion of migrated squid
 R_tt[0] = 0.5 # trader cooperation
 S[0] = 1208770 # size of the squid population
-c_t[0] = m *g # fleet cost of transport
+c_t[0] = m *f # fleet cost of transport
 E[0] = 1. # fishing effort
 C[0] = 120877 # squid catch
-p_e[0] = 164706 # max p_e comtrade
+p_e[0] = 99366 # max p_e comtrade
 p_f[0] = 15438 # max p_f datamares
-R[0] = C[0] *p_f[0] -(c_t[0] + E[0])
+
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
 ################################################################################
 
-#### Import packages ###########################################################
-import scipy.stats as st
-from pandas import *
-
-#### Model w/o relationships ###################################################
-flag = 1 # 0 = NoR model; 1 = Rmodel
-
 #### Load dataset  #############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
 #! load columns
 y = df1['year'] #
 pe = df1['pe_MXNiat'] #
@@ -145,13 +145,11 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
         R[t] = C[t] *p_f[t] - c_t[t-1] *(E[t-1]/(B_h+B_f))
 
         print t, tau[t], ML[t], q[t], y_S[t], S[t], c_t[t], E[t], C[t], p_e[t], p_f[t], R[t]
-    return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R
-
+        return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
 ################################################################################
-
 
 ##### Initiate arrays ##########################################################
 sim = np.arange(0,100) # number of simulations
@@ -208,54 +206,46 @@ for h in range(0,y.shape[0]): # calculate the 95% confidence interval
     meanP[h] = np.nanmean(zeta)
 
 ##### Save data  ###############################################################
-if flag == 0:
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy", highC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy", highP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy", meanP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy", meanC)
-if flag == 1:
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy", highC)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy", highP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy", meanP)
-    np.save("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
-
+# if flag == 0:
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy", meanP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy", meanC)
+# if flag == 1:
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy", meanP)
+# np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
 
 ################################################################################
 ###########################  PLOT FILE  ########################################
 ################################################################################
 
-#### Import packages ###########################################################
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
-import pandas as pd
+#### Load data  ###############################################################
+NoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
+NoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
+highNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
+highNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy")
+lowNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy")
+lowNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy")
+meanNoR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy")
+meanNoR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
 
-##### Load data  ###############################################################
-NoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
-NoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
-highNoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
-highNoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy")
-lowNoR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy")
-lowNoR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy")
-meanNoR_C =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy")
-meanNoR_P =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
-
-R_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesR_pf.npy")
-R_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/timeSeriesR_C.npy")
-highR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
-highR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy")
-lowR_pf = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy")
-lowR_C = np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
-meanR_C =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy")
-meanR_P =np.load("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
+R_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_pf.npy")
+R_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_C.npy")
+highR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
+highR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy")
+lowR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy")
+lowR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
+meanR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy")
+meanR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
 
 ### Load dataset ###############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
 #! load columns
 yr = df1['year'] #
 pe = df1['pe_MXNiat'] #
@@ -265,7 +255,7 @@ ssh = df1['essh_avg'] #
 ml = df1['ML'] #
 ys = df1['y_S'] #
 
-df2 = pd.read_excel('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
+df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
 # Load columns
 VolAll = df2['tons_DM'] ## CATCH DATA
 PrAll = df2['priceMXNia_DM'] ## PRICE DATA
@@ -279,7 +269,7 @@ hfont = {'fontname':'Helvetica'}
 
 #####! PLOT MODEL  #############################################################
 fig = plt.figure()
-a, = plt.plot(meanR_P, label = "BEM+", color="orange")
+a, = plt.plot(meanR_P, label = "MLM", color="orange")
 b, = plt.plot(meanNoR_P, label = "BEM", color="steelblue")
 c, = plt.plot(PrAll, label = "data", color = "indianred")
 plt.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
@@ -294,12 +284,11 @@ plt.gcf().subplots_adjust(bottom=0.15)
 plt.ylabel("Price for fishers $MXN$",fontsize=22, **hfont)
 plt.legend(handles=[a,b,c], loc='best', fontsize= 14)
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
-fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/FIGS/R1_support1MC.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
 plt.show()
 
 fig = plt.figure()
-a, = plt.plot(meanR_C, label = "BEM+", color="orange")
+a, = plt.plot(meanR_C, label = "MLM", color="orange")
 b, = plt.plot(meanNoR_C, label = "BEM", color="steelblue")
 c, = plt.plot(VolAll, label = "data", color= "indianred")
 plt.fill_between(x, highR_C, lowR_C, where = highNoR_C >= lowNoR_C, facecolor='orange', alpha= 0.3, zorder = 0)
@@ -316,21 +305,20 @@ plt.ylabel("Catch $tons$",fontsize=22, **hfont)
 # legend
 plt.legend(handles=[a,b,c], loc='best', fontsize=14)
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
-fig.savefig('./Dropbox/PhD/Resources/P2/Squid/CODE/FIGS/R1_support2MC.png',dpi=200)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
 plt.show()
 
 ### CALCULATE r squared ########################################################
 ### price for fishers
 slope, intercept, r_value, p_value, std_err = stats.linregress(PrAll, meanR_P)
-print("r-squared price BEM+:", r_value**2)
+print("r-squared price MLM:", r_value**2)
 
 slope, intercept, r_value, p_value, std_err = stats.linregress(PrAll, meanNoR_P)
 print("r-squared price BEM:", r_value**2)
 
 ### catch
 slope, intercept, r_value, p_value, std_err = stats.linregress(VolAll, meanR_C)
-print("r-squared catch BEM+:", r_value**2)
+print("r-squared catch MLM:", r_value**2)
 
 slope, intercept, r_value, p_value, std_err = stats.linregress(VolAll, meanNoR_C)
 print("r-squared catch BEM:", r_value**2)

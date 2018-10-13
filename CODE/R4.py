@@ -1,8 +1,11 @@
 #### Import packages ###########################################################
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
+import scipy.stats as st
+from pandas import *
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
@@ -15,18 +18,20 @@ n2 = 49.811 # ML, intersect
 l1 = -0.0028 # q, slope
 l2 = 0.1667 # q, intersect
 a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
-K = 1208770 # carrying capacity in t
-m = 5492603.58 # cost per unit of transport all boats, MXN/trip
-f = 40 # l of fuel per trip
+gamma = 49200 # maximum demand
+beta = 0.0736 # slope of demand-price function
+w_m = 13355164 # min wage per hour all fleet
+c_p = 1776.25 # cost of processing
+c_t = 156076110 # cost of fishing
+m = 156076110 # cost per unit of transport all boats, MXN/trip
+f = 1 # l of fuel per trip
+
 B_h = 7.203 # hours per fisher
 B_f = 2 # fisher per panga
 h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
-gamma = 49200 # maximum demand, t
-beta = 0.0736 # slope of demand-price function
-c_p = 1776.25 # cost of processing, MXNia/t
-w_m = 13355164 # min wage per hour all fleet
 flag = 3 # this gives an error if its not been changed previously to the right model
 
 ### Variables ##################################################################
@@ -47,17 +52,16 @@ p_f = np.zeros(tmax) # price for fishers
 R = np.zeros(tmax) # revenue of fishers
 
 ### Initial values #############################################################
-tau[0] = 42. # temperature
+tau[0] = 42. # isotherm depth
 q[0] = 0.01 # squid catchability
 y_S[0] = 0.5 # proportion of migrated squid
 R_tt[0] = 0.5 # trader cooperation
 S[0] = 1208770 # size of the squid population
-c_t[0] = m *g # fleet cost of transport
+c_t[0] = m *f # fleet cost of transport
 E[0] = 1. # fishing effort
 C[0] = 120877 # squid catch
-p_e[0] = 164706 # max p_e comtrade
+p_e[0] = 99366 # max p_e comtrade
 p_f[0] = 15438 # max p_f datamares
-R[0] = C[0] *p_f[0] -(c_t[0] + E[0])
 
 ################################################################################
 ###############################  MODEL FILE  ###################################
@@ -109,13 +113,6 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
 #############################  RUN MODEL FILE  #################################
 ################################################################################
 
-#### Import packages ###########################################################
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
-import pandas as pd
-
 #### Model w/o relationships ###################################################
 flag = 1 # must be 1!!! 1 = Rmodel
 
@@ -137,11 +134,6 @@ for i in np.arange(0,gamma.shape[0]):
 ################################  PLOT FILE  ###################################
 ################################################################################
 
-#### Import packages ###########################################################
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 ##### Plot stuff ###############################################################
 ## define dimensions
 y = gamma #  y axis
@@ -159,13 +151,12 @@ plt.tick_params(axis=1, which='major', labelsize=12)
 ax.set_ylabel('demand $\gamma $', fontsize = 22)
 plt.ylim(1E4,1.09E5)
 ## set x-axis
-ax.set_xlabel('trader cooperation $R_{tt}$', fontsize = 22)
+ax.set_xlabel('trader cooperation $R$', fontsize = 22)
 plt.xlim(0,0.9)
 ## colorbar
 cb = plt.colorbar()
-cb.set_label(r'$\frac{p_f}{p_e}$', rotation=0, labelpad=15, fontsize = 28, fontweight='bold')
+cb.set_label(r'$\frac{P_f}{P_e}$', rotation=0, labelpad=15, fontsize = 28, fontweight='bold')
 # plt.clim([0,1])
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/P2/Squid/CODE/Squid/FIGS/R4_20180411.png",dpi=500)
-# fig1.savefig("./Dropbox/PhD/Resources/P2/Squid/CODE/FIGS/R4_20180411.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_20180411.png",dpi=500)
 plt.show()
