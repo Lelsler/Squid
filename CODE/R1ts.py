@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
-import scipy.stats as st
+from scipy import stats
 from pandas import *
 
 #### Model w/o relationships ###################################################
@@ -145,7 +145,7 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
         R[t] = C[t] *p_f[t] - c_t[t-1] *(E[t-1]/(B_h+B_f))
 
         print t, tau[t], ML[t], q[t], y_S[t], S[t], c_t[t], E[t], C[t], p_e[t], p_f[t], R[t]
-        return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R
+    return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
@@ -219,7 +219,7 @@ for h in range(0,y.shape[0]): # calculate the 95% confidence interval
 #     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy", lowP)
 #     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy", highP)
 #     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy", meanP)
-# np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
 
 ################################################################################
 ###########################  PLOT FILE  ########################################

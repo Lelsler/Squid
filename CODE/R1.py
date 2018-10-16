@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
-import scipy.stats as st
+from scipy import stats
 from pandas import *
 
 #### model w/o relationships ###################################################
@@ -182,7 +182,7 @@ x = range(100000)
 y = range(0,4)
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.scatter(meanR_C, meanR_P, s=30, color="orange", marker="o", label='BEM+')
+ax1.scatter(meanR_C, meanR_P, s=30, color="orange", marker="o", label='MLM')
 ax1.scatter(meanNoR_C, meanNoR_P, s=30, color="steelblue", marker="o", label='BEM')
 ax1.scatter(VolSR, PrSR, s=30, color="indianred", marker="s", label='SR data')
 ax1.scatter(VolAll, PrAll, s=30, color="maroon", marker="s", label='All offices data')
@@ -197,8 +197,7 @@ plt.ylim(1,)
 # legend
 plt.legend(loc="best", fontsize=14);
 # save &show stuff
-# fig.savefig('/Users/lauraelsler/Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_20180411.png',dpi=200)
-# fig.savefig('/Users/lauraelsler/Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/CODE/FIGS/R1_20180411.png',dpi=200)
+# fig.savefig('/Users/lauraelsler/Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1MC.png',dpi=200)
 plt.show()
 
 ###! Time series plot
