@@ -8,7 +8,7 @@ from scipy import stats
 from pandas import *
 
 #### Model w/o relationships ###################################################
-flag = 1 # 0 = NoR model; 1 = Rmodel
+flag = 0 # 0 = NoR model; 1 = Rmodel
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
@@ -122,11 +122,7 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
         #     q[t]= 0.0018 *ML[t] - 0.0318
 
         # migration of squid
-        if ys[t] == 1:
-            # y_S[t] = a1 *np.exp(tau[t]-b1)
-            y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
-        else:
-            y_S[t]= ys[t]
+        y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
         if y_S[t] > 1:
             y_S[t] = 1
             print "yS high"
@@ -315,7 +311,9 @@ hfont = {'fontname':'Helvetica'}
 fig = plt.figure()
 a, = plt.plot(meanR_P, label = "MLM", color="orange")
 b, = plt.plot(meanNoR_P, label = "BEM", color="steelblue")
-c, = plt.plot(PrAll, label = "data", color = "indianred")
+c, = plt.plot(meanR_P_sst, label = "MLMsst", color="red")
+d, = plt.plot(meanNoR_P_sst, label = "BEMsst", color="blue")
+e, = plt.plot(PrAll, label = "data", color= "indianred")
 plt.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
 plt.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='steelblue', alpha= 0.3, zorder = 0)
 # plt.title("Predicted and measured price for fishers [MXN]", fontsize= 25)
@@ -326,7 +324,7 @@ plt.xlabel("Year",fontsize=22, **hfont)
 plt.gcf().subplots_adjust(bottom=0.15)
 # y-axis
 plt.ylabel("Price for fishers $MXN$",fontsize=22, **hfont)
-plt.legend(handles=[a,b,c], loc='best', fontsize= 14)
+plt.legend(handles=[a,b,c,d,e], loc='best', fontsize= 14)
 # save and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
 plt.show()
@@ -334,8 +332,8 @@ plt.show()
 fig = plt.figure()
 a, = plt.plot(meanR_C, label = "MLM", color="orange")
 b, = plt.plot(meanNoR_C, label = "BEM", color="steelblue")
-c, = plt.plot(meanR_C, label = "MLMsst", color="red")
-d, = plt.plot(meanNoR_C, label = "BEMsst", color="blue")
+c, = plt.plot(meanR_C_sst, label = "MLMsst", color="red")
+d, = plt.plot(meanNoR_C_sst, label = "BEMsst", color="blue")
 e, = plt.plot(VolAll, label = "data", color= "indianred")
 plt.fill_between(x, highR_C, lowR_C, where = highNoR_C >= lowNoR_C, facecolor='orange', alpha= 0.3, zorder = 0)
 plt.fill_between(x, highNoR_C, lowNoR_C, where = highNoR_C >= lowNoR_C, facecolor='steelblue', alpha= 0.3, zorder = 0)
