@@ -193,9 +193,9 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     beta = np.random.uniform(0.01, 0.1)
     c_p = np.random.uniform(1000, 2148)
     g = np.random.uniform(0, 2.9)
-    gamma = np.random.uniform(20000, 51000)
+    gamma = np.random.uniform(2000, 51000)
     m = np.random.uniform(2368793, 8450159)
-    w_m = np.random.uniform(11956952, 28108539)
+    w_m = np.random.uniform(58528541, 156076110)
 
     x = [b0, b1, b2, b3, beta, c_p, g, gamma, m , w_m]
     par[j] = x
