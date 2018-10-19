@@ -23,6 +23,7 @@ n1 = -22.239 # ML, slope
 n2 = 49.811 # ML, intersect
 l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
+qc = 0.1 # catchability constant
 a1 = 1/np.exp(32-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
@@ -87,10 +88,10 @@ ml = df1['ML'] #
 ys = df1['y_S'] #
 
 ### New max time
-tmax = len(y)
+# tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
     for t in np.arange(1,tmax):
         # sst trend
         tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
@@ -123,12 +124,23 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamm
 
         # trader cooperation
         R_tt[t] = (1-y_S[t])
-        # squid population
-        S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
+
+        #### switch between models ####
+        if flag == 0: # squid population BEM
+            S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - qc *E[t-1] *S[t-1]
+        if flag == 1: # squid population MLM
+            S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
+
         # cost of transport
         c_t[t]= m *f # I decided to use fixed costs over migration, that equally well/better predicted catches over m* (y_S[t]); (source: LabNotesSquid, April 11)
+
+        #### switch between models ####
+        if flag == 0: # effort BEM
+            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t[t-1] *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
+        if flag == 1: # effort MLM
+            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t[t-1] *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
+
         # fishing effort
-        Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t[t-1] *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
         # fishing effort scaled
         E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
         if E[t] > 1:
@@ -138,8 +150,12 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamm
             E[t] = 0
             print "E low"
 
-        # catch
-        C[t] = q[t] *E[t] *S[t]
+        #### switch between models ####
+        if flag == 0: # catch BEM
+            C[t] = qc *E[t] *S[t]
+        if flag == 1: # catch MLM
+            C[t] = q[t] *E[t] *S[t]
+
         # export price
         p_e[t] = gamma* (C[t])**(-beta)
         if p_e[t]>= 99366:
@@ -153,7 +169,7 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamm
             print "BEM"
         if flag == 1:
             # minimum wage
-            p_min[t]= (E[t] *w_m)/C[t]
+            p_min[t]= c_t[t] *(E[t]/(B_h*B_f))
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
             print "MLM"
@@ -219,7 +235,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT9 = np.zeros(tau.shape[0])
 
     for i in np.arange(0,1):
-            tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]
@@ -273,9 +289,9 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
 ################################################################################
 
 ### New max time ###############################################################
-yr = np.arange(0,27)
-tmax = len(yr)
-x = np.arange(0,len(yr))
+# yr = np.arange(0,27)
+# tmax = len(yr)
+# x = np.arange(0,len(yr))
 
 ### font ######################################################################
 hfont = {'fontname':'Helvetica'}

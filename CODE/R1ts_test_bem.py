@@ -8,7 +8,7 @@ from scipy import stats
 from pandas import *
 
 #### Model w/o relationships ###################################################
-flag = 1 # 0 = NoR model; 1 = Rmodel
+flag = 0 # 0 = NoR model; 1 = Rmodel
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
@@ -166,7 +166,7 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, 
             print "BEM"
         if flag == 1:
             # minimum wage
-            p_min[t]= (E[t] *w_m)/C[t]
+            p_min[t]= c_t[t] *(E[t]/(B_h*B_f))
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
             print "MLM"
