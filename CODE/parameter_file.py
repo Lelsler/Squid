@@ -8,16 +8,31 @@ import scipy.stats as st
 from pandas import *
 
 ### Parameters #################################################################
-# scales: tons, years, MXNia, hours, trips
-tmax = 30 # model run, years
-b1 = 41.750 # isotherm depth
-b2 = -5.696 # isotherm depth
-b3 = 16.397 # isotherm depth
+# units: tons, years, MXNia, hours, trips
+tmax = 27 # model run, years
+
+# following parameters fitted to SST
+b0 = -16.49 # SST trend
+b1 = 0.02 # SST trend
+b2 = 6.779 # SST trend
+b3 = 0.091 # SST trend
+# b1 = 41.750 # isotherm depth
+# b2 = -5.696 # isotherm depth
+# b3 = 16.397 # isotherm depth
+
 n1 = -22.239 # ML, slope
 n2 = 49.811 # ML, intersect
-l1 = -0.0028 # q, slope
-l2 = 0.1667 # q, intersect
-a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+
+# following parameters adjusted for catchability
+l1 = -0.0059 # q, slope
+l2 = 0.1882 # q, intersect
+# l1 = -0.0028 # q, slope
+# l2 = 0.1667 # q, intersect
+
+# following parameter adjusted for catchability
+a1 = 1/np.exp(32-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+# a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand

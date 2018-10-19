@@ -19,23 +19,11 @@ b0 = -16.49 # SST trend
 b1 = 0.02 # SST trend
 b2 = 6.779 # SST trend
 b3 = 0.091 # SST trend
-# b1 = 41.750 # isotherm depth
-# b2 = -5.696 # isotherm depth
-# b3 = 16.397 # isotherm depth
-
 n1 = -22.239 # ML, slope
 n2 = 49.811 # ML, intersect
-
-# following parameters adjusted for catchability
 l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
-# l1 = -0.0028 # q, slope
-# l2 = 0.1667 # q, intersect
-
-# following parameter adjusted for catchability
 a1 = 1/np.exp(32-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
-# a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
-
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -99,7 +87,7 @@ ys = df1['y_S'] #
 tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
     for t in np.arange(1,tmax):
         # sst trend
         tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
@@ -153,6 +141,7 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
         p_e[t] = gamma* (C[t])**(-beta)
         if p_e[t]>= 99366:
             p_e[t]= 99366
+            print "pe high"
 
         #### switch between models ####
         if flag == 0:
@@ -166,12 +155,8 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
             print "MLM"
 
-
-        # revenue of fishers
-        R[t] = C[t] *p_f[t] - c_t[t-1] *(E[t-1]/(B_h+B_f))
-
         print q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t]
-    return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R
+    return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
@@ -182,7 +167,7 @@ sim = np.arange(0,100) # number of simulations
 x = np.zeros(10) # set array to save parameters
 par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of each simulation
 cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
-pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices in each time period of each simulation
+pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices for fishers in each time period of each simulation
 
 ##### Run the model ############################################################
 for j in range(0,sim.shape[0]): # draw randomly a float in the range of values for each parameter
@@ -204,7 +189,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT1 = np.zeros(tau.shape[0])
 
     for i in np.arange(1,tmax):
-            tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R = model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f = model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
             OUT[i]= p_f[i]
             OUT1[i]= C[i]
             pri[j,i] = OUT[i]
