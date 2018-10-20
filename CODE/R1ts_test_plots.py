@@ -7,13 +7,13 @@ import pandas as pd
 from scipy import stats
 from pandas import *
 
+
 #### Model w/o relationships ###################################################
 flag = 1 # 0 = NoR model; 1 = Rmodel
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
 tmax = 27 # model run, years
-
 # following parameters fitted to SST
 b0 = -16.49 # SST trend
 b1 = 0.02 # SST trend
@@ -32,8 +32,6 @@ beta = 0.0736 # slope of demand-price function
 w_m = 13355164 # min wage per hour all fleet
 c_p = 1776.25 # cost of processing
 c_t = 156076110 # cost of fishing
-m = 156076110 # cost per unit of transport all boats, MXN/trip
-f = 1 # l of fuel per trip
 
 B_h = 7.203 # hours per fisher
 B_f = 2 # fisher per panga
@@ -47,7 +45,6 @@ ML = np.zeros(tmax) # mantle length
 y_S = np.zeros(tmax) # distance of squid migration from initial fishing grounds
 R_tt = np.zeros(tmax) # trader cooperation
 S = np.zeros(tmax) # size of the squid population
-c_t = np.zeros(tmax) # cost of transport
 Escal = np.zeros(tmax) # scale effort
 E = np.zeros(tmax) # fishing effort
 C = np.zeros(tmax) # squid catch
@@ -61,16 +58,15 @@ RA = np.zeros(tmax) # revenue all fishery
 G = np.zeros(tmax) # pay gap between fishers and traders
 
 ### Initial values #############################################################
-tau[0] = 42. # isotherm depth
-q[0] = 0.01 # squid catchability
+tau[0] = 30. # isotherm depth
+q[0] = 0.05 # squid catchability
 y_S[0] = 0.5 # proportion of migrated squid
 R_tt[0] = 0.5 # trader cooperation
-S[0] = 1208770 # size of the squid population
-c_t[0] = m *f # fleet cost of transport
-E[0] = 1. # fishing effort
-C[0] = 120877 # squid catch
-p_e[0] = 99366 # max p_e comtrade
-p_f[0] = 15438 # max p_f datamares
+S[0] = 610075 # size of the squid population, mean
+E[0] = 0.5 # fishing effort
+C[0] = 60438 # squid catch mean
+p_e[0] = 52035 # mean p_e comtrade, rounded
+p_f[0] = 8997 # mean p_f datamares, rounded
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -91,7 +87,7 @@ ys = df1['y_S'] #
 # tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
     for t in np.arange(1,tmax):
         # sst trend
         tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
@@ -131,14 +127,11 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, 
         if flag == 1: # squid population MLM
             S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
 
-        # cost of transport
-        c_t[t]= m *f # I decided to use fixed costs over migration, that equally well/better predicted catches over m* (y_S[t]); (source: LabNotesSquid, April 11)
-
         #### switch between models ####
         if flag == 0: # effort BEM
-            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t[t-1] *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
+            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
         if flag == 1: # effort MLM
-            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t[t-1] *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
+            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
 
         # fishing effort
         # fishing effort scaled
@@ -168,14 +161,16 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, 
             p_f[t] = p_e[t] -c_p
             print "BEM"
         if flag == 1:
-            # minimum wage
-            p_min[t]= c_t[t] *(E[t]/(B_h*B_f))
+            ## minimum wage new
+            # p_min[t]= c_t *(E[t]/(B_h*B_f)) # -> must be MXN/ton to fit into p_f calc
+            # minimum wage old
+            p_min[t]= (E[t] *w_m)/C[t]
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
             print "MLM"
 
         # revenue of fishers
-        RF[t] = C[t] *p_f[t] -c_t[t] *(E[t]/(B_h*B_f))
+        RF[t] = C[t] *p_f[t] -c_t *(E[t]/(B_h*B_f))
         # revenue of traders
         RT[t] = C[t] *p_e[t] -RF[t] -c_p
         # revenue of all fishery
@@ -185,7 +180,7 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, 
         G[t] = RF[t]/RT[t]
 
         print q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t], G[t]
-    return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, G
+    return tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
@@ -220,7 +215,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     # m = np.random.uniform(2368793, 8450159)
     # w_m = np.random.uniform(58528541, 156076110)
 
-    x = [b0, b1, b2, b3, beta, c_p, g, gamma, m , w_m]
+    x = [b0, b1, b2, b3, beta, c_p, g, gamma, c_t , w_m]
     par[j] = x
     print par
 
@@ -235,7 +230,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT9 = np.zeros(tau.shape[0])
 
     for i in np.arange(0,1):
-            tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]
@@ -254,7 +249,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
             print "c_p", c_p, c_p -(1776.25)
             print "g", g, g -(1.4)
             print "gamma", gamma, gamma -(49200)
-            print "m", m , m -(156076110)
+            print "c_t", c_t , c_t -(156076110)
             print "w_m", w_m, w_m -(13355164)
 
 # activate this area only as you have 1 < MC runs
