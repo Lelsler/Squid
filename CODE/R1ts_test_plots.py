@@ -7,7 +7,6 @@ import pandas as pd
 from scipy import stats
 from pandas import *
 
-
 #### Model w/o relationships ###################################################
 flag = 1 # 0 = NoR model; 1 = Rmodel
 
@@ -24,7 +23,7 @@ n2 = 49.811 # ML, intersect
 l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
 qc = 0.1 # catchability constant
-a1 = 1/np.exp(32-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+a1 = 1/np.exp(30.82399-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -128,12 +127,12 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
             S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
 
         #### switch between models ####
-        if flag == 0: # effort BEM
-            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
-        if flag == 1: # effort MLM
-            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *(E[t-1]/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
-
         # fishing effort
+        if flag == 0: # effort BEM
+            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+        if flag == 1: # effort MLM
+            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+
         # fishing effort scaled
         E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
         if E[t] > 1:
@@ -149,6 +148,9 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
         if flag == 1: # catch MLM
             C[t] = q[t] *E[t] *S[t]
 
+        if C[t] <= 0:
+            C[t]= 1
+
         # export price
         p_e[t] = gamma* (C[t])**(-beta)
         if p_e[t]>= 99366:
@@ -162,15 +164,15 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
             print "BEM"
         if flag == 1:
             ## minimum wage new
-            # p_min[t]= c_t *(E[t]/(B_h*B_f)) # -> must be MXN/ton to fit into p_f calc
+            p_min[t]= (c_t *E[t])/C[t] # -> must be MXN/ton to fit into p_f calc
             # minimum wage old
-            p_min[t]= (E[t] *w_m)/C[t]
+            # p_min[t]= (E[t] *w_m)/C[t]
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
             print "MLM"
 
         # revenue of fishers
-        RF[t] = C[t] *p_f[t] -c_t *(E[t]/(B_h*B_f))
+        RF[t] = C[t] *p_f[t] -c_t *E[t]
         # revenue of traders
         RT[t] = C[t] *p_e[t] -RF[t] -c_p
         # revenue of all fishery
