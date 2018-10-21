@@ -30,7 +30,7 @@ gamma = 49200 # maximum demand
 beta = 0.0736 # slope of demand-price function
 w_m = 13355164 # min wage per hour all fleet
 c_p = 1776.25 # cost of processing
-c_t = 156076110 # cost of fishing
+c_t = 156060433 # cost of fishing
 
 B_h = 7.203 # hours per fisher
 B_f = 2 # fisher per panga
