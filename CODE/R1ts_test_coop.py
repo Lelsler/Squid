@@ -12,7 +12,7 @@ flag = 1 # 0 = NoR model; 1 = Rmodel
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
-tmax = 100 # model run, years
+tmax = 50 # model run, years
 # following parameters fitted to SST
 b0 = -16.49 # SST trend
 b1 = 0.02 # SST trend
@@ -24,6 +24,7 @@ l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
 qc = 0.1 # catchability constant
 a1 = 1/np.exp(30.82399-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+d = 5 # slope of trader cooperation
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -86,7 +87,7 @@ ys = df1['y_S'] #
 # tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
     for t in np.arange(1,tmax):
         # sst trend
         tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
@@ -117,8 +118,33 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
             y_S[t] = 0.01
             print "yS low"
 
-        # trader cooperation
-        R_tt[t] = (1-y_S[t])
+        ### trader cooperation
+        ## inverse, linear
+        # R_tt[t] = (1-y_S[t])
+        ## logistic
+        # R_tt[t] = 1/(1+np.exp(-d*(y_S[t]-0.5)))
+        ## exponential
+        R_tt[t]= np.exp(-d* y_S[t])
+
+        ## integrate trader cooperation intervention
+        if t <= timeInt:
+            R_tt[t] = np.exp(-d* y_S[t])
+        else:
+            if competition == 0:
+                R_tt[t] = np.exp(-d* y_S[t])
+            if competition == 1:
+                R_tt[t] = (1-y_S[t]) *(1/(1+(t-timeInt) *d2))
+                c_i[t] = c_i * R_tt[t]
+
+
+        ## integrate demand intervention
+        # if t <= timeInt:
+        #     p_e[t] = gamma* (C[t])**(-beta)
+        # else:
+        #     if demand == 0:
+        #         p_e[t] = gamma* (C[t])**(-beta)
+        #     if demand == 1:
+        #         p_e[t] = (gamma *(1+ d1 *(t -timeInt))) *(C[t])**(-beta)
 
         #### switch between models ####
         if flag == 0: # squid population BEM
@@ -236,7 +262,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT9 = np.zeros(tau.shape[0])
 
     for i in np.arange(0,1):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]
@@ -308,7 +334,7 @@ ax1.legend(loc="best")
 ax2.plot(y_S, label = "migration", color="orange")
 ax2.plot(q, label = "catchability", color="steelblue")
 ax2.plot(E, label = "effort", color="red")
-ax2.plot(G, label = "pay gap", color="green")
+# ax2.plot(G, label = "pay gap", color="green")
 ax2.legend(loc="best")
 # axis 3
 ax3.plot(C, label = "catch", color="orange")
@@ -324,21 +350,23 @@ f.subplots_adjust(hspace=0.2)
 plt.show()
 
 #
-# # plot tau
-# fig = plt.figure()
-# ax1 = fig.add_subplot(121)
-# a, = plt.plot(OUT3, label = "tau", color="orange")
-# # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
-# # y-axis
-# plt.ylabel("Temperature",fontsize=22, **hfont)
-# # legend
-# plt.legend(handles=[a], loc='best', fontsize=14)
-# # save and show
-# plt.show()
+# plot tau
+fig = plt.figure()
+ax1 = fig.add_subplot(121)
+a, = plt.plot(RT, label = "traders", color="orange")
+b, = plt.plot(RF, label = "fishers", color="steelblue")
+# c, = plt.plot(RA, label = "all", color="red")
+# x-axis
+# plt.xticks(np.arange(len(tem)), yr, rotation=45, fontsize=12)
+# plt.xlim(10,tmax-2)
+plt.xlabel("Year",fontsize=22, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15)
+# y-axis
+plt.ylabel("Revenue",fontsize=22, **hfont)
+# legend
+plt.legend(handles=[a,b], loc='best', fontsize=14)
+# save and show
+plt.show()
 #
 # # plot y_S, q, E
 # fig = plt.figure()
