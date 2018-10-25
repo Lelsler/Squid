@@ -8,11 +8,18 @@ from scipy import stats
 from pandas import *
 
 #### Model w/o relationships ###################################################
-flag = 1 # 0 = NoR model; 1 = Rmodel
+flag = 1 # 0 = BEM model; 1 = MLM
+intervention = 2 # 0 = competition intervention; 1 = demand BEM; 2 = demand MLM
+competition = 0 # 0 = no intervention; 1 = intervention competition
+demand = 1 # 0 = no intervention; 1 = intervention demand
+
+# for competition int: 1010
+# for demand BEM: 0101
+# for demand MLM: 1201
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
-tmax = 100 # model run, years
+tmax = 45 # model run, years
 # following parameters fitted to SST
 b0 = -16.49 # SST trend
 b1 = 0.02 # SST trend
@@ -24,7 +31,6 @@ l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
 qc = 0.1 # catchability constant
 a1 = 1/np.exp(30.82399-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
-d = 5 # slope of trader cooperation
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -68,6 +74,17 @@ C[0] = 60438 # squid catch mean
 p_e[0] = 52035 # mean p_e comtrade, rounded
 p_f[0] = 8997 # mean p_f datamares, rounded
 
+
+### intervention parameters and variables ######################################
+### parameters
+d = 5 # slope of trader cooperation
+f = 1 # intercept of trader cooperation
+i_e = 0.1 # increment of decrease in traders cooperation per unit investment
+timeInt = 15 # year to start intervention
+
+### Variables
+F = np.zeros(tmax) # intercept of traders cooperation
+
 ################################################################################
 ###########################  MODEL FILE  #######################################
 ################################################################################
@@ -87,10 +104,10 @@ ys = df1['y_S'] #
 # tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, f, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
     for t in np.arange(1,tmax):
         # sst trend
-        tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
+        tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990) # changed from 2015 to 1990 to mimic the beginning of the intervention
         # isotherm depth
         # tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
 
@@ -124,7 +141,17 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2
         ## logistic
         # R_tt[t] = 1/(1+np.exp(-d*(y_S[t]-0.5)))
         ## exponential
-        R_tt[t]= np.exp(-d* y_S[t])
+        R_tt[t]= f+ np.exp(-d* y_S[t])
+
+        ## integrate trader cooperation intervention
+        if t <= timeInt:
+            R_tt[t] = f+ np.exp(-d* y_S[t])
+        else:
+            if competition == 0:
+                R_tt[t] = f+ np.exp(-d* y_S[t])
+            if competition == 1:
+                F[t] = F[t-1]- (i_e * R_tt[t-1])
+                R_tt[t] = F[t]+ np.exp(-d* y_S[t])
 
         #### switch between models ####
         if flag == 0: # squid population BEM
@@ -140,7 +167,6 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2
             Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
 
         # fishing effort scaled
-        # E[t]= (Escal[t])/(93529521) # scale it to max(Escal)
         E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
         if E[t] > 1:
             E[t] = 1
@@ -158,8 +184,17 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2
         if C[t] <= 0:
             C[t]= 1
 
+        ## integrate demand intervention
+        if t <= timeInt:
+            p_e[t] = gamma* (C[t])**(-beta)
+        else:
+            if demand == 0:
+                p_e[t] = gamma* (C[t])**(-beta)
+            if demand == 1:
+                p_e[t] = (gamma *(1+ i_e *(t -timeInt))) *(C[t])**(-beta)
+
         # export price
-        p_e[t] = gamma* (C[t])**(-beta)
+        # p_e[t] = gamma* (C[t])**(-beta)
         if p_e[t]>= 99366:
             p_e[t]= 99366
             print "pe high"
@@ -203,16 +238,16 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2
 sim = np.arange(0,1) # number of simulations
 x = np.zeros(10) # set array to save parameters
 par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of each simulation
-cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
-pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices for fishers in each time period of each simulation
-
-### extra variables to monitor
-tem = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save tau in each time period of each simulation
-mig = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save migrate squid in each time period of each simulation
-cco = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catchability in each time period of each simulation
-pop = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save squid population in each time period of each simulation
-eff = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save effort in each time period of each simulation
-mar = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save market prices in each time period of each simulation
+# cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
+# pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices for fishers in each time period of each simulation
+#
+# ### extra variables to monitor
+# tem = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save tau in each time period of each simulation
+# mig = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save migrate squid in each time period of each simulation
+# cco = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catchability in each time period of each simulation
+# pop = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save squid population in each time period of each simulation
+# eff = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save effort in each time period of each simulation
+# mar = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save market prices in each time period of each simulation
 
 ##### Run the model ############################################################
 for j in range(0,sim.shape[0]): # draw randomly a float in the range of values for each parameter
@@ -243,27 +278,27 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT9 = np.zeros(tau.shape[0])
 
     for i in np.arange(0,1):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, f, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
             OUT1= p_f
-            OUT2= C
-            OUT3= tau
-            OUT4= y_S
-            OUT5= q
+            OUT2= p_e
+            OUT3= RF
+            OUT4= RT
+            OUT5= R_tt
             OUT6= S
             OUT7= E
-            OUT8= p_e
+            OUT8= C
             OUT9= G
-            print "END"
-            print "b0", b0, b0 -(-16.49)
-            print "b1", b1, b1 -(0.02)
-            print "b2", b2, b2 -(6.779)
-            print "b3", b3, b3 -(0.091)
-            print "beta", beta, beta-(0.0736)
-            print "c_p", c_p, c_p -(1776.25)
-            print "g", g, g -(1.4)
-            print "gamma", gamma, gamma -(49200)
-            print "c_t", c_t , c_t -(156076110)
-            print "w_m", w_m, w_m -(13355164)
+            # print "END"
+            # print "b0", b0, b0 -(-16.49)
+            # print "b1", b1, b1 -(0.02)
+            # print "b2", b2, b2 -(6.779)
+            # print "b3", b3, b3 -(0.091)
+            # print "beta", beta, beta-(0.0736)
+            # print "c_p", c_p, c_p -(1776.25)
+            # print "g", g, g -(1.4)
+            # print "gamma", gamma, gamma -(49200)
+            # print "c_t", c_t , c_t -(156076110)
+            # print "w_m", w_m, w_m -(13355164)
 
 # activate this area only as you have 1 < MC runs
             # pri[j,i] = OUT1[i]
@@ -292,109 +327,104 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
 #     highP[h] = np.nanmean(zeta) + ((1.96 * np.nanstd(zeta))/np.sqrt(np.count_nonzero(~np.isnan(zeta))))
 #     meanP[h] = np.nanmean(zeta)
 
+##### Save data  ###############################################################
+if intervention == 0: # intervention competition
+    print "intervention competition"
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_pf.npy", OUT1)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_pe.npy", OUT2)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RF.npy", OUT3)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RT.npy", OUT4)
+if intervention == 1: # intervention demand BEM
+    print "intervention demand BEM"
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pf.npy", OUT1)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pe.npy", OUT2)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RF.npy", OUT3)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RT.npy", OUT4)
+if intervention == 2: # intervention demand MLM
+    print "intervention demand MLM"
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pf.npy", OUT1)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pe.npy", OUT2)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RF.npy", OUT3)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RT.npy", OUT4)
+
 ################################################################################
 ###########################  PLOT FILE  ########################################
 ################################################################################
 
-### New max time ###############################################################
-# yr = np.arange(0,27)
-# tmax = len(yr)
-# x = np.arange(0,len(yr))
+##### Load data  ###############################################################
+# competition intervention
+cPE = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_pe.npy")
+cPF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_pf.npy")
+cRF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RF.npy")
+cRT = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RT.npy")
+# intervention demand
+dBPE = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pe.npy")
+dBPF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pf.npy")
+dBRF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RF.npy")
+dBRT = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RT.npy")
+# intervention competition
+dMPE = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pe.npy")
+dMPF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pf.npy")
+dMRF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RF.npy")
+dMRT = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RT.npy")
 
 ### font ######################################################################
 hfont = {'fontname':'Helvetica'}
 
-#####! PLOT MODEL  #############################################################
-# Three subplots sharing both x/y axes
-f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-# axis 1
-ax1.plot(tau, label = "tau", color="orange")
-ax1.set_title('Temperature')
-ax1.legend(loc="best")
-# axis 2
-ax2.plot(y_S, label = "migration", color="orange")
-ax2.plot(q, label = "catchability", color="steelblue")
-ax2.plot(E, label = "effort", color="red")
-# ax2.plot(G, label = "pay gap", color="green")
-ax2.legend(loc="best")
-# axis 3
-ax3.plot(C, label = "catch", color="orange")
-ax3.plot(S, label = "population", color="steelblue")
-ax3.legend(loc="best")
-# axis 4
-ax4.plot(p_f, label = "price for fishers", color="orange")
-ax4.plot(p_e, label = "market price", color="steelblue")
-ax4.legend(loc="best")
-# Fine-tune figure; make subplots close to each other and hide x ticks for
-# all but bottom plot.
-f.subplots_adjust(hspace=0.2)
-plt.show()
-
-#
-# plot tau
+# begin plotting competition intervention
 fig = plt.figure()
-ax1 = fig.add_subplot(121)
-a, = plt.plot(RT, label = "traders", color="orange")
-b, = plt.plot(RF, label = "fishers", color="steelblue")
-# c, = plt.plot(RA, label = "all", color="red")
+a, = plt.plot((cPF), label = "Price for fishers", color = 'steelblue')
+b, = plt.plot((cPE), label = "Market price", color = 'orange')
+c, = plt.plot((cRF/1E4), label = "Fisher income in k", color = 'sage')
+d, = plt.plot((cRT/1E4), label = "Trader income in k", color = 'indianred')
 # x-axis
-# plt.xticks(np.arange(len(tem)), yr, rotation=45, fontsize=12)
-# plt.xlim(10,tmax-2)
-plt.xlabel("Year",fontsize=22, **hfont)
+#plt.xticks(np.arange(len(yr)), yr, rotation=45)
+plt.xlim(2,tmax)
+plt.xlabel("time $years$",fontsize=22, **hfont)
 plt.gcf().subplots_adjust(bottom=0.15)
 # y-axis
-plt.ylabel("Revenue",fontsize=22, **hfont)
-# legend
-plt.legend(handles=[a,b], loc='best', fontsize=14)
-# save and show
+# plt.ylim(0,4E9)
+plt.ylabel("Ratio of income and price $MXN$" ,fontsize=22, **hfont)
+plt.legend(handles=[a,b,c,d], loc='best', fontsize=14)
+# load and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support1.png',dpi=500)
 plt.show()
-#
-# # plot y_S, q, E
-# fig = plt.figure()
-# a, = plt.plot(OUT4, label = "migration", color="orange")
-# b, = plt.plot(OUT5, label = "catchability", color="steelblue")
-# c, = plt.plot(OUT7, label = "effort", color="red")
-# # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
-# # y-axis
-# plt.ylabel("See legend",fontsize=22, **hfont)
-# # legend
-# plt.legend(handles=[a,b,c], loc='best', fontsize=14)
-# # save and show
-# plt.show()
-#
-# # plot S, C
-# fig = plt.figure()
-# a, = plt.plot(OUT2, label = "catch", color="orange")
-# b, = plt.plot(OUT6, label = "population", color="steelblue")
-# # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
-# # y-axis
-# plt.ylabel("volume $tons$",fontsize=22, **hfont)
-# # legend
-# plt.legend(handles=[a,b], loc='best', fontsize=14)
-# # save and show
-# plt.show()
-#
-# # plot pf, pe
-# fig = plt.figure()
-# a, = plt.plot(OUT1, label = "price for fishers", color="orange")
-# b, = plt.plot(OUT8, label = "market price", color="steelblue")
-# # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
-# # y-axis
-# plt.ylabel("price $MXN$",fontsize=22, **hfont)
-# # legend
-# plt.legend(handles=[a,b], loc='best', fontsize=14)
-# # save and show
-# plt.show()
-#
+
+
+# begin plotting demand intervention
+fig = plt.figure()
+a, = plt.plot((dBPF/dBPE), label = "Price ratio BEM", color = 'steelblue')
+b, = plt.plot((dMPF/dMPE), label = "Price ratio MLM", color = 'orange')
+c, = plt.plot((dBRF/dBRT), label = "Income ratio BEM", color = 'indianred')
+d, = plt.plot((dMRF/dMRT), label = "Income ratio MLM", color = 'sage')
+# x-axis
+#plt.xticks(np.arange(len(yr)), yr, rotation=45)
+plt.xlim(2,tmax)
+plt.xlabel("time $years$",fontsize=22, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15)
+# y-axis
+# plt.ylim(0,4E9)
+plt.ylabel("Ratio of income and price $MXN$" ,fontsize=22, **hfont)
+plt.legend(handles=[a,b,c,d], loc='best', fontsize=14)
+# load and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support2.png',dpi=500)
+plt.show()
+
+# begin plotting demand intervention
+fig = plt.figure()
+a, = plt.plot(dBPF, label = "Price for fishers BEM", color = 'steelblue')
+b, = plt.plot(dBPE, label = "Market price BEM", color = 'orange')
+c, = plt.plot(dMPF, label = "Price for fishers MLM", color = 'sage')
+d, = plt.plot(dMPE, label = "Market price MLM", color = 'indianred')
+# x-axis
+#plt.xticks(np.arange(len(yr)), yr, rotation=45)
+plt.xlim(2,tmax)
+plt.xlabel("time $years$",fontsize=22, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15)
+# y-axis
+# plt.ylim(0,4E9)
+plt.ylabel("Ratio of income and price $MXN$" ,fontsize=22, **hfont)
+plt.legend(handles=[a,b,c,d], loc='best', fontsize=14)
+# load and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support1.png',dpi=500)
+plt.show()

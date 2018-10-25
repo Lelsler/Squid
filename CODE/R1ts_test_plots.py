@@ -24,6 +24,8 @@ l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
 qc = 0.1 # catchability constant
 a1 = 1/np.exp(30.82399-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+d = 5 # slope of trader cooperation
+f = 1 # intercept of trader cooperation
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -86,7 +88,7 @@ ys = df1['y_S'] #
 # tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, f, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
     for t in np.arange(1,tmax):
         # sst trend
         tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
@@ -117,8 +119,13 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
             y_S[t] = 0.01
             print "yS low"
 
-        # trader cooperation
-        R_tt[t] = (1-y_S[t])
+        ### trader cooperation
+        ## inverse, linear
+        # R_tt[t] = (1-y_S[t])
+        ## logistic
+        # R_tt[t] = 1/(1+np.exp(-d*(y_S[t]-0.5)))
+        ## exponential
+        R_tt[t]= f+ np.exp(-d* y_S[t])
 
         #### switch between models ####
         if flag == 0: # squid population BEM
@@ -236,7 +243,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT9 = np.zeros(tau.shape[0])
 
     for i in np.arange(0,1):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, d, f, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]
