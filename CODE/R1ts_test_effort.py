@@ -11,7 +11,10 @@ from sympy import Symbol
 
 #### Model w/o relationships ###################################################
 flag = 1 # 0 = NoR model; 1 = Rmodel
-e_calc = 0
+e_calc = 2 # regular effort calc = 0, optimal effort calc = 1, logistic effort calc = 2
+
+## new parameter
+pmax = 3080254
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
@@ -58,6 +61,7 @@ RF = np.zeros(tmax) # revenue of fishers
 RT = np.zeros(tmax) # revenue of traders
 RA = np.zeros(tmax) # revenue all fishery
 G = np.zeros(tmax) # pay gap between fishers and traders
+RFn = np.zeros(tmax) # profit
 
 ### Initial values #############################################################
 tau[0] = 30. # isotherm depth
@@ -69,6 +73,7 @@ E[0] = 0.5 # fishing effort
 C[0] = 60438 # squid catch mean
 p_e[0] = 52035 # mean p_e comtrade, rounded
 p_f[0] = 8997 # mean p_f datamares, rounded
+RFn[0] = 1 # mean p_f datamares, rounded
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -129,27 +134,33 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
         if flag == 1: # squid population MLM
             S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
 
-        if e_calc == 0: # old effort calculation
-            # fishing effort
-            #### switch between models ####
-            if flag == 0: # effort BEM
-                Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
-            if flag == 1: # effort MLM
+        #### switch between models ####
+        if flag == 0: # effort BEM
+            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+        if flag == 1: # effort MLM
+            if e_calc == 0:
                 Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+                # fishing effort scaled
+                E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
+                if E[t] > 1:
+                    E[t] = 1
+                    print "E high"
+                elif E[t] < 0:
+                    E[t] = 0
+                    print "E low"
 
-            # fishing effort scaled
-            E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
-            if E[t] > 1:
+            if e_calc == 1: # optimal effort calculation # doesnt work
+                e = Symbol('e')
+                print solve( p_f[t] *q[t] *e *S[t] -c_t *e, e )
+                # E[t]= e
+
+            if e_calc == 2: # logistic effort calculation
+                print "ef"
                 E[t] = 1
-                print "E high"
-            elif E[t] < 0:
-                E[t] = 0
-                print "E low"
-
-        if e_calc == 0: # new effort calculation
-            e = Symbol('e')
-            print solve( p_f[t] *q[t] *e *S[t] -c_t *e, e )
-            # E[t]= e
+                # pmax = 1000
+                RFn[t]= RF[t-1]-0.0001/(17622692-0.0001)
+                # nom[t] = RF[-1] #+ pmax
+                E[t] = 1/(1+ 100*np.exp(-RFn[t])+0.5)
 
         #### switch between models ####
         if flag == 0: # catch BEM
