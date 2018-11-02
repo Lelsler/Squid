@@ -11,10 +11,7 @@ from sympy import Symbol
 
 #### Model w/o relationships ###################################################
 flag = 1 # 0 = NoR model; 1 = Rmodel
-e_calc = 2 # regular effort calc = 0, optimal effort calc = 1, logistic effort calc = 2
-
-## new parameter
-pmax = 3080254
+e_calc = 0 # regular effort calc = 0, optimal effort calc = 1, logistic effort calc = 2
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
@@ -30,6 +27,7 @@ l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
 qc = 0.1 # catchability constant
 a1 = 1/np.exp(32-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+# a1 = 0.0016384606200292189
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -156,11 +154,10 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
 
             if e_calc == 2: # logistic effort calculation
                 print "ef"
-                E[t] = 1
-                # pmax = 1000
-                RFn[t]= RF[t-1]-0.0001/(17622692-0.0001)
-                # nom[t] = RF[-1] #+ pmax
-                E[t] = 1/(1+ 100*np.exp(-RFn[t])+0.5)
+                # E[t] = 1
+                RFn[t]= (RF[t-1])/(17622692)
+                # E[t] = RFn[t]
+                E[t] = 0.5 +1/(1+ np.exp(-RFn[t])*100)
 
         #### switch between models ####
         if flag == 0: # catch BEM
