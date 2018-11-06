@@ -21,7 +21,7 @@ l1 = -0.0059 # q, slope
 l2 = 0.1882 # q, intersect
 a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+2015)))) # migration trigger
 f = 0 # intercept of trader cooperation
-d = 5 # slope of trader cooperation
+d = 1 # slope of trader cooperation
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -29,15 +29,12 @@ beta = 0.0736 # slope of demand-price function
 c_p = 1776.25 # cost of processing
 c_t = 156076110 # cost of fishing
 
-B_h = 7.203 # hours per fisher
-B_f = 2 # fisher per panga
 h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
 
 ### Variables ##################################################################
 tau = np.zeros(tmax) # temperature
 q = np.zeros(tmax) # catchability squid population
-ML = np.zeros(tmax) # mantle length
 y_S = np.zeros(tmax) # distance of squid migration from initial fishing grounds
 R_tt = np.zeros(tmax) # trader cooperation
 S = np.zeros(tmax) # size of the squid population
@@ -45,7 +42,6 @@ Escal = np.zeros(tmax) # scale effort
 E = np.zeros(tmax) # fishing effort
 C = np.zeros(tmax) # squid catch
 p_e = np.zeros(tmax) # export price
-p_escal = np.zeros(tmax) # export price
 p_min = np.zeros(tmax) # minimum wage
 p_f = np.zeros(tmax) # price for fishers
 RF = np.zeros(tmax) # revenue of fishers
@@ -53,15 +49,15 @@ RT = np.zeros(tmax) # revenue of traders
 RA = np.zeros(tmax) # revenue all fishery
 
 ### Initial values #############################################################
-tau[0] = 42. # isotherm depth
-q[0] = 0.01 # squid catchability
+tau[0] = 30. # isotherm depth
+q[0] = 0.05 # squid catchability
 y_S[0] = 0.5 # proportion of migrated squid
 R_tt[0] = 0.5 # trader cooperation
-S[0] = 1208770 # size of the squid population
-E[0] = 1. # fishing effort
-C[0] = 120877 # squid catch
-p_e[0] = 99366 # max p_e comtrade
-p_f[0] = 15438 # max p_f datamares
+S[0] = 610075 # size of the squid population, mean
+E[0] = 0.5 # fishing effort
+C[0] = 60438 # squid catch mean
+p_e[0] = 52035 # mean p_e comtrade, rounded
+p_f[0] = 8997 # mean p_f datamares, rounded
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -123,15 +119,10 @@ def model(b0, b1, b2, b3, l1, l2, a1, f, d, g, K, h1, h2, gamma, beta, c_p, c_t,
             p_e[t]= 99366
             print "pe high"
 
-        #### switch between models ####
-        if flag == 0:
-            # price for fishers
-            p_f[t] = p_e[t] -c_p
-        if flag == 1:
-            # minimum wage
-            p_min[t]= (c_t *E[t])/C[t] #  MXN/ton
-            # price for fishers
-            p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
+        # minimum wage
+        p_min[t]= (c_t *E[t])/C[t] #  MXN/ton
+        # price for fishers
+        p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
 
         if p_f[t] >= (p_e[t] -c_p):
             p_f[t] = p_e[t] -c_p
@@ -145,7 +136,7 @@ def model(b0, b1, b2, b3, l1, l2, a1, f, d, g, K, h1, h2, gamma, beta, c_p, c_t,
         RA[t] = C[t] *p_e[t]
 
         #print t, tau[t], ML[t], q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t]
-    return tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA
+    return tau, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA
 
 
 ################################################################################
@@ -157,7 +148,7 @@ flag = 1 # must be 1!!! 1 = Rmodel
 
 ##### Run the model ############################################################
 gamma = np.arange(20000,130000,1000)
-d = np.arange(1,111,1)
+d = np.arange(0.1,11.1,.1)
 
 ##### Initiate arrays ##########################################################
 cat = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save catches in each time period of each simulation
@@ -170,10 +161,13 @@ mig = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save migrate squid in ea
 cco = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save catchability in each time period of each simulation
 pop = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save squid population in each time period of each simulation
 eff = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save effort in each time period of each simulation
+rvf = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save revenue fishers in each time period of each simulation
+rvt = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save revenue traders in each time period of each simulation
+rva = np.zeros((gamma.shape[0],d.shape[0])) # matrix to save revenue all fishery in each time period of each simulation
 
 for i in np.arange(0,gamma.shape[0]):
     for j in np.arange(0,d.shape[0]):
-        tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA = model(b0, b1, b2, b3, l1, l2, a1, f, d[i], g, K, h1, h2, gamma[j], beta, c_p, c_t, flag)
+        tau, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA = model(b0, b1, b2, b3, l1, l2, a1, f, d[i], g, K, h1, h2, gamma[j], beta, c_p, c_t, flag)
         gap1[i,j]= np.mean(p_f/p_e)
         gap2[i,j]= np.std(p_f/p_e)
 
@@ -186,6 +180,9 @@ for i in np.arange(0,gamma.shape[0]):
         pop[i,j]= np.mean(S)
         eff[i,j]= np.mean(E)
 
+        rvf[i,j]= np.mean(RF)
+        rvt[i,j]= np.mean(RT)
+        rva[i,j]= np.mean(RA)
 
 ################################################################################
 ################################  PLOT FILE  ###################################
@@ -193,8 +190,8 @@ for i in np.arange(0,gamma.shape[0]):
 
 ##### Plot 1 ###################################################################
 ## define dimensions
-y = d #  y axis
-x = gamma #  x axis
+y = gamma #  y axis
+x = d #  x axis
 z = gap1 #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -205,11 +202,11 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trader cooperation $\delta$', fontsize = 22)
-plt.ylim(1,100)
+ax.set_ylabel('Demand $\gamma$', labelpad=4, fontsize = 22)
+plt.ylim(2E4,12E4)
 ## set x-axis
-ax.set_xlabel('Demand $\gamma$', fontsize = 22)
-plt.xlim(2E4,12E4)
+ax.set_xlabel('Trader cooperation $\delta$', fontsize = 22)
+plt.xlim(1,10)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label((r'mean price gap $\frac{P_f}{P_m}$'), rotation=270, labelpad=40, fontsize = 22)
@@ -220,8 +217,8 @@ plt.show()
 
 ##### Plot 2 ###################################################################
 ## define dimensions
-y = d #  y axis
-x = gamma #  x axis
+y = gamma #  y axis
+x = d #  x axis
 z = gap2 #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -232,11 +229,11 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trader cooperation $\delta$', fontsize = 22)
-plt.ylim(1,100)
+ax.set_ylabel('Demand $\gamma$', labelpad=4, fontsize = 22)
+plt.ylim(2E4,12E4)
 ## set x-axis
-ax.set_xlabel('Demand $\gamma$', fontsize = 22)
-plt.xlim(2E4,12E4)
+ax.set_xlabel('Trader cooperation $\delta$', fontsize = 22)
+plt.xlim(1,10)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label((r'std price gap $\frac{P_f}{P_m}$'), rotation=270, labelpad=40, fontsize = 22)

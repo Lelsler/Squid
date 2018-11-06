@@ -8,26 +8,39 @@ import scipy
 from pandas import *
 
 #### Model w/o relationships ###################################################
-flag = 1 # 0 = NoR model; 1 = Rmodel
+flag = 0 # 0 = NoR model; 1 = Rmodel
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
 tmax = 27 # model run, years
-b1 = 41.750 # isotherm depth
-b2 = -5.696 # isotherm depth
-b3 = 16.397 # isotherm depth
-l1 = -0.0028 # q, slope # NEW l1 = -0.0059 # q, slope
-l2 = 0.1667 # q, intersect # NEW l2 = 0.1882 # q, intersect
-qc = 0.1 # q, constant catchability
-a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
-d = 5 # slope of trader cooperation
+
+## isotherm depth
+# b1 = 41.750 # isotherm depth
+# b2 = -5.696 # isotherm depth
+# b3 = 16.397 # isotherm depth
+# l1 = -0.0028 # q, slope # SST l1 = -0.0059 # q, slope
+# l2 = 0.1667 # q, intersect # SST l2 = 0.1882 # q, intersect
+# qc = 0.1 # q, constant catchability
+# a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+
+## following parameters fitted to SST
+b0 = -16.49 # SST trend
+b1 = 0.02 # SST trend
+b2 = 6.779 # SST trend
+b3 = 0.091 # SST trend
+l1 = -0.0059 # q, slope
+l2 = 0.1882 # q, intersect
+qc = 0.1 # catchability constant
+a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+2015)))) # migration trigger
 f = 0 # intercept of trader cooperation
+d = 1 # slope of trader cooperation
+
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
 beta = 0.0736 # slope of demand-price function
 c_p = 1776.25 # cost of processing
-c_t = 107291548 # 156076110  # cost of fishing
+c_t = 107291548 #156076110 #    # cost of fishing
 w_m = 13355164 # min wage per hour all fleet
 
 h1 = 2E-10 # scale E
@@ -56,27 +69,26 @@ G = np.zeros(tmax) # pay gap between fishers and traders
 
 ### Initial values #############################################################
 ## OLD
-tau[0] = 42. # isotherm depth
-q[0] = 0.01 # squid catchability
-y_S[0] = 0.5 # proportion of migrated squid
-R_tt[0] = 0.5 # trader cooperation
-S[0] = 1208770 # size of the squid population
-E[0] = 1. # fishing effort
-C[0] = 120877 # squid catch
-p_e[0] = 99366 # max p_e comtrade
-p_f[0] = 15438 # max p_f datamares
-
-## NEW
-# tau[0] = 30. # isotherm depth
-# q[0] = 0.05 # squid catchability
+# tau[0] = 42. # isotherm depth
+# q[0] = 0.01 # squid catchability
 # y_S[0] = 0.5 # proportion of migrated squid
 # R_tt[0] = 0.5 # trader cooperation
-# S[0] = 610075 # size of the squid population, mean
-# E[0] = 0.5 # fishing effort
-# C[0] = 60438 # squid catch mean
-# p_e[0] = 52035 # mean p_e comtrade, rounded
-# p_f[0] = 8997 # mean p_f datamares, rounded
+# S[0] = 1208770 # size of the squid population
+# E[0] = 1. # fishing effort
+# C[0] = 120877 # squid catch
+# p_e[0] = 99366 # max p_e comtrade
+# p_f[0] = 15438 # max p_f datamares
 
+## NEW
+tau[0] = 42. # 30 for SST. isotherm depth
+q[0] = 0.05 # squid catchability
+y_S[0] = 0.5 # proportion of migrated squid
+R_tt[0] = 0.5 # trader cooperation
+S[0] = 610075 # size of the squid population, mean
+E[0] = 0.5 # fishing effort
+C[0] = 60438 # squid catch mean
+p_e[0] = 52035 # mean p_e comtrade, rounded
+p_f[0] = 8997 # mean p_f datamares, rounded
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -100,7 +112,11 @@ tmax = len(y)
 def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
     for t in np.arange(1,tmax):
         # isotherm depth
-        tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
+        # tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
+        # sst trend
+        tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
+
+
         # mantle length and catchability
         if ml[t] == 1:
             q[t]= l1 *tau[t] +l2
@@ -132,17 +148,17 @@ def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta,
         R_tt[t]= f+ np.exp(-d* y_S[t])
 
         #### switch between models ####
-        if flag == 0: # squid population BEM
-            S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - qc *E[t-1] *S[t-1]
-        if flag == 1: # squid population MLM
-            S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
+        # if flag == 0: # squid population BEM
+        #     S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - qc *E[t-1] *S[t-1]
+        # if flag == 1: # squid population MLM
+        S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
 
 
         #### switch between models ####
-        if flag == 0: # effort BEM
-            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *(E[t-1]) # /(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
-        if flag == 1: # effort MLM
-            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *(E[t-1]) #/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
+        # if flag == 0: # effort BEM
+        #     Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *(E[t-1]) # /(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
+        # if flag == 1: # effort MLM
+        Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *(E[t-1])#/(B_h*B_f)) # c_t is per trip so we need to upscale E hr > fisher > trip
 
         # fishing effort scaled
         E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
@@ -155,10 +171,10 @@ def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta,
             print "E low"
 
         #### switch between models ####
-        if flag == 0: # catch BEM
-            C[t] = qc *E[t] *S[t]
-        if flag == 1: # catch MLM
-            C[t] = q[t] *E[t] *S[t]
+        # if flag == 0: # catch BEM
+        #     C[t] = qc *E[t] *S[t]
+        # if flag == 1: # catch MLM
+        C[t] = q[t] *E[t] *S[t]
 
         if C[t] <= 0: # avoid infinity calculations
             C[t]= 1
@@ -173,14 +189,11 @@ def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta,
         if flag == 0:
             # price for fishers
             p_f[t] = p_e[t] -c_p
-            print "BEM"
         if flag == 1:
             # minimum wage
             p_min[t]= (c_t *E[t])/C[t] # -> must be MXN/ton to fit into p_f calc
             # minimum wage old
             # p_min[t]= (E[t] *w_m)/C[t]
-            print "MLM"
-
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
 
@@ -274,8 +287,8 @@ df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/PriceVo
 VolAll = df2['tons_DM'] ## CATCH DATA
 PrAll = df2['priceMXNia_DM'] ## PRICE DATA
 x = np.arange(0,len(yr))
-hfont = {'fontname':'Helvetica'}
 
+hfont = {'fontname':'Helvetica'}
 
 fig = plt.figure()
 # add the first axes using subplot populated with predictions
@@ -335,13 +348,15 @@ plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fonts
 plt.show()
 
 slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanP[10:-1])
+print ("st error:", std_err)
 print("r-squared price:", r_value**2)
-print scipy.stats.pearsonr(PrAll[10:-1], meanP[10:-1])
+print ("p-value:", scipy.stats.pearsonr(PrAll[10:-1], meanP[10:-1]))
 
 ### catch
 slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanC[10:-1])
+print ("st error:", std_err)
 print("r-squared catch:", r_value**2)
-print scipy.stats.pearsonr(VolAll[10:-1], meanC[10:-1])
+print ("p-value:", scipy.stats.pearsonr(VolAll[10:-1], meanC[10:-1]))
 
 
 ##### Save data  ###############################################################
