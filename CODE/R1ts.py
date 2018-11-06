@@ -8,22 +8,19 @@ from scipy import stats
 from pandas import *
 
 #### Model w/o relationships ###################################################
-flag = 0 # 0 = NoR model; 1 = Rmodel
+flag = 1 # 0 = NoR model; 1 = Rmodel
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
 tmax = 27 # model run, years
-
-# following parameters fitted to SST
-b0 = -16.49 # SST trend
-b1 = 0.02 # SST trend
-b2 = 6.779 # SST trend
-b3 = 0.091 # SST trend
+b1 = 41.750 # isotherm depth
+b2 = -5.696 # isotherm depth
+b3 = 16.397 # isotherm depth
 n1 = -22.239 # ML, slope
 n2 = 49.811 # ML, intersect
-l1 = -0.0059 # q, slope
-l2 = 0.1882 # q, intersect
-a1 = 1/np.exp(32-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+l1 = -0.0028 # q, slope
+l2 = 0.1667 # q, intersect
+a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
@@ -38,6 +35,7 @@ B_h = 7.203 # hours per fisher
 B_f = 2 # fisher per panga
 h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
+flag = 3 # this gives an error if its not been changed previously to the right model
 
 ### Variables ##################################################################
 tau = np.zeros(tmax) # temperature
@@ -68,6 +66,7 @@ C[0] = 120877 # squid catch
 p_e[0] = 99366 # max p_e comtrade
 p_f[0] = 15438 # max p_f datamares
 
+
 ################################################################################
 ###########################  MODEL FILE  #######################################
 ################################################################################
@@ -87,35 +86,27 @@ ys = df1['y_S'] #
 tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
     for t in np.arange(1,tmax):
-        # sst trend
-        tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
         # isotherm depth
-        # tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
-
-        # catchability sst
-        q[t]= l1 *tau[t] +l2
-        if q[t] > 0.1:
-            q[t] = 0.1
-            print "q high"
-        elif q[t] < 0:
-            q[t] = 0
-            print "q low"
+        tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
         # mantle length and catchability
-        # if ml[t] == 1:
-        #     q[t]= l1 *tau[t] +l2
-        # else:
-        #     ML[t]= ml[t]
-        #     q[t]= 0.0018 *ML[t] - 0.0318
+        if ml[t] == 1:
+            q[t]= l1 *tau[t] +l2
+        else:
+            ML[t]= ml[t]
+            q[t]= 0.0018 *ML[t] - 0.0318
 
         # migration of squid
-        y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
+        if ys[t] == 1:
+            y_S[t] = a1 *np.exp(tau[t]-b1)
+        else:
+            y_S[t]= ys[t]
         if y_S[t] > 1:
             y_S[t] = 1
             print "yS high"
-        elif y_S[t] < 0.01:
-            y_S[t] = 0.01
+        elif y_S[t] < 0:
+            y_S[t] = 0
             print "yS low"
 
         # trader cooperation
@@ -139,24 +130,22 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamm
         C[t] = q[t] *E[t] *S[t]
         # export price
         p_e[t] = gamma* (C[t])**(-beta)
-        if p_e[t]>= 99366:
-            p_e[t]= 99366
-            print "pe high"
 
         #### switch between models ####
         if flag == 0:
             # price for fishers
             p_f[t] = p_e[t] -c_p
-            print "BEM"
         if flag == 1:
             # minimum wage
             p_min[t]= (E[t] *w_m)/C[t]
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
-            print "MLM"
 
-        print q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t]
-    return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f
+        # revenue of fishers
+        R[t] = C[t] *p_f[t] - c_t[t-1] *(E[t-1]/(B_h+B_f))
+
+        print t, tau[t], ML[t], q[t], y_S[t], S[t], c_t[t], E[t], C[t], p_e[t], p_f[t], R[t]
+    return tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
@@ -164,36 +153,40 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamm
 
 ##### Initiate arrays ##########################################################
 sim = np.arange(0,100) # number of simulations
-x = np.zeros(10) # set array to save parameters
+x = np.zeros(12) # set array to save parameters
 par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of each simulation
 cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
-pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices for fishers in each time period of each simulation
+pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices in each time period of each simulation
 
 ##### Run the model ############################################################
 for j in range(0,sim.shape[0]): # draw randomly a float in the range of values for each parameter
-    b0 = np.random.uniform(-5.15, -27.83)
-    b1 = np.random.uniform(0.026, 0.014)
-    b2 = np.random.uniform(6.859, 6.699)
-    b3 = np.random.uniform(0.171, 0.011)
+    # a1 = np.random.uniform(2E-08, 3E-08) # parameter ranges
+    # a2 = np.random.uniform(0.2, 9E-16)
+    b1 = np.random.uniform(38.750, 42.1)
+    b2 = np.random.uniform(-3.987, -6.9)
+    b3 = np.random.uniform(11.478, 16.4)
     beta = np.random.uniform(0.01, 0.1)
     c_p = np.random.uniform(1000, 2148)
     g = np.random.uniform(0, 2.9)
-    gamma = np.random.uniform(2000, 51000)
+    gamma = np.random.uniform(20000, 51000)
+    # l1 = np.random.uniform(-0.0005, -0.0122)
+    # l2 = np.random.uniform(0.0317, 0.7927)
     m = np.random.uniform(2368793, 8450159)
-    w_m = np.random.uniform(58528541, 156076110)
+    w_m = np.random.uniform(11956952, 28108539)
 
-    x = [b0, b1, b2, b3, beta, c_p, g, gamma, m , w_m]
+    x = [a1, b1, b2, b3, beta, c_p, g, gamma, l1, l2, m , w_m]
     par[j] = x
 
     OUT = np.zeros(tau.shape[0])
     OUT1 = np.zeros(tau.shape[0])
 
     for i in np.arange(1,tmax):
-            tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f = model(b0, b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, c_t, E, C, p_e, p_f, R = model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
             OUT[i]= p_f[i]
             OUT1[i]= C[i]
             pri[j,i] = OUT[i]
             cat[j,i] = OUT1[i]
+
 
 lowC = np.zeros(y.shape[0]) # initiate variables for 95% confidence interval
 highC = np.zeros(y.shape[0])
@@ -214,26 +207,25 @@ for h in range(0,y.shape[0]): # calculate the 95% confidence interval
 
 ##### Save data  ###############################################################
 if flag == 0:
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC_sst.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC_sst.npy", highC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP_sst.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP_sst.npy", highP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP_sst.npy", meanP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC_sst.npy", meanC)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy", lowC)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy", highC)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy", lowP)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy", highP)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy", meanP)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy", meanC)
 if flag == 1:
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC_sst.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC_sst.npy", highC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP_sst.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP_sst.npy", highP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP_sst.npy", meanP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC_sst.npy", meanC)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy", lowC)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy", highC)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy", lowP)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy", highP)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy", meanP)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
 
 ################################################################################
 ###########################  PLOT FILE  ########################################
 ################################################################################
 
 #### Load data  ###############################################################
-# isotherm depth
 NoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
 NoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
 highNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
@@ -243,15 +235,6 @@ lowNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1suppor
 meanNoR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy")
 meanNoR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
 
-# SST TREND
-highNoR_pf_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP_sst.npy")
-highNoR_C_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC_sst.npy")
-lowNoR_pf_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP_sst.npy")
-lowNoR_C_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC_sst.npy")
-meanNoR_C_sst =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC_sst.npy")
-meanNoR_P_sst =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP_sst.npy")
-
-# isotherm depth
 R_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_pf.npy")
 R_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_C.npy")
 highR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
@@ -260,14 +243,6 @@ lowR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support
 lowR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
 meanR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy")
 meanR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
-
-# SST TREND
-highR_pf_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP_sst.npy")
-highR_C_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC_sst.npy")
-lowR_pf_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP_sst.npy")
-lowR_C_sst = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC_sst.npy")
-meanR_C_sst =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC_sst.npy")
-meanR_P_sst =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP_sst.npy")
 
 ### Load dataset ###############################################################
 df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
@@ -294,45 +269,61 @@ hfont = {'fontname':'Helvetica'}
 
 #####! PLOT MODEL  #############################################################
 fig = plt.figure()
-a, = plt.plot(meanR_P, label = "MLM", color="orange")
-b, = plt.plot(meanNoR_P, label = "BEM", color="steelblue")
-c, = plt.plot(meanR_P_sst, label = "MLMsst", color="red")
-d, = plt.plot(meanNoR_P_sst, label = "BEMsst", color="blue")
-e, = plt.plot(PrAll, label = "data", color= "indianred")
-plt.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
-plt.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='steelblue', alpha= 0.3, zorder = 0)
-# plt.title("Predicted and measured price for fishers [MXN]", fontsize= 25)
+# add the first axes using subplot populated with predictions
+ax1 = fig.add_subplot(111)
+line1, = ax1.plot(meanR_P, label = "MLM", color="orange")
+line2, = ax1.plot(meanNoR_P, label = "BEM", color="steelblue")
+line3, = ax1.plot(PrAll, label = "data", color = "indianred")
+ax1.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
+ax1.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# add the second axes using subplot with ML
+ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+line4, = ax2.plot(ml, color="lightgrey")
 # x-axis
-plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize= 12)
-plt.xlim(10,tmax-2)
-plt.xlabel("Year",fontsize=22, **hfont)
-plt.gcf().subplots_adjust(bottom=0.15)
+ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax1.set_xlim(10,tmax-2)
+ax1.set_xlabel("Year",fontsize=20, **hfont)
+ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax2.set_xlim(10,tmax-2)
+ax2.set_xlabel("Year",fontsize=20, **hfont)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
 # y-axis
-plt.ylabel("Price for fishers $MXN$",fontsize=22, **hfont)
-plt.legend(handles=[a,b,c,d,e], loc='best', fontsize= 14)
+ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
+# legend
+plt.legend([line1, line2, line3, line4], ["MLM", "BEM", "Data", "Mantle length"], fontsize= 11)
 # save and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
 plt.show()
 
 fig = plt.figure()
-a, = plt.plot(meanR_C, label = "MLM", color="orange")
-b, = plt.plot(meanNoR_C, label = "BEM", color="steelblue")
-c, = plt.plot(meanR_C_sst, label = "MLMsst", color="red")
-d, = plt.plot(meanNoR_C_sst, label = "BEMsst", color="blue")
-e, = plt.plot(VolAll, label = "data", color= "indianred")
-plt.fill_between(x, highR_C, lowR_C, where = highNoR_C >= lowNoR_C, facecolor='orange', alpha= 0.3, zorder = 0)
-plt.fill_between(x, highNoR_C, lowNoR_C, where = highNoR_C >= lowNoR_C, facecolor='steelblue', alpha= 0.3, zorder = 0)
-# title
-# plt.title("Predicted and measured catch [t]", fontsize= 25)
+# add the first axes using subplot populated with predictions
+ax1 = fig.add_subplot(111)
+line1, = ax1.plot(meanR_C, label = "MLM", color="orange")
+line2, = ax1.plot(meanNoR_C, label = "BEM", color="steelblue")
+line3, = ax1.plot(VolAll, label = "data", color = "indianred")
+ax1.fill_between(x, highR_C, lowR_C, where = highNoR_C >= lowNoR_C, facecolor='orange', alpha= 0.3, zorder = 0)
+ax1.fill_between(x, highNoR_C, lowNoR_C, where = highNoR_C >= lowNoR_C, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# add the second axes using subplot with ML
+ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+line4, = ax2.plot(ml, color="lightgrey")
 # x-axis
-plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-plt.xlim(10,tmax-2)
-plt.xlabel("Year",fontsize=22, **hfont)
-plt.gcf().subplots_adjust(bottom=0.15)
+ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax1.set_xlim(10,tmax-2)
+ax1.set_xlabel("Year",fontsize=20, **hfont)
+ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax2.set_xlim(10,tmax-2)
+ax2.set_xlabel("Year",fontsize=20, **hfont)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
 # y-axis
-plt.ylabel("Catch $tons$",fontsize=22, **hfont)
+ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
-plt.legend(handles=[a,b,c,d,e], loc='best', fontsize=14)
+plt.legend([line1, line2, line3, line4], ["MLM", "BEM", "Data", "Mantle length"], fontsize= 11)
 # save and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
 plt.show()
