@@ -4,42 +4,21 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
-from scipy import stats
+import scipy
 from pandas import *
-from sympy.solvers import solve
-from sympy import Symbol
 
-#### Model w/o relationships ###################################################
-flag = 1 # 0 = NoR model; 1 = Rmodel
-e_calc = 0 # regular effort calc = 0, optimal effort calc = 1, logistic effort calc = 2
+#################### CHOICES ###################################################
+flag = 1 # 0 = NoR model; 1 = Rmodel, # 2 = in-btw model
+# SST or isotherm: parameters, initial condition for tau, and MC parameter ranges
+temperature = 1 # iso = 0, SST = 1
+cost = 1 # 0 = old, 1 = new
+initial = 1 # 0 = old, 1 = new
+mantle = 0 # 0 = use mantle, 1 = use tau
+coop = 1 # 0 = old, 1 = new
+wage = 1 # 0 = old, 1 = new
+effort = 3 # 0 = mechanistic, 1= constant, 2 = logistic, 3 = proportional to q
 
-### Parameters #################################################################
-# scales: tons, years, MXNia, hours, trips
 tmax = 27 # model run, years
-# following parameters fitted to SST
-b0 = -16.49 # SST trend
-b1 = 0.02 # SST trend
-b2 = 6.779 # SST trend
-b3 = 0.091 # SST trend
-n1 = -22.239 # ML, slope
-n2 = 49.811 # ML, intersect
-l1 = -0.0059 # q, slope
-l2 = 0.1882 # q, intersect
-qc = 0.1 # catchability constant
-a1 = 1/np.exp(32-(b0+b1*2015)) # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
-# a1 = 0.0016384606200292189
-K = 1208770 # carrying capacity
-g = 1.4 # population growth rate
-gamma = 49200 # maximum demand
-beta = 0.0736 # slope of demand-price function
-w_m = 13355164 # min wage per hour all fleet
-c_p = 1776.25 # cost of processing
-c_t = 156060433 # cost of fishing
-
-B_h = 7.203 # hours per fisher
-B_f = 2 # fisher per panga
-h1 = 2E-10 # scale E
-h2 = 0.6596 # scale E
 
 ### Variables ##################################################################
 tau = np.zeros(tmax) # temperature
@@ -52,26 +31,74 @@ Escal = np.zeros(tmax) # scale effort
 E = np.zeros(tmax) # fishing effort
 C = np.zeros(tmax) # squid catch
 p_e = np.zeros(tmax) # export price
-p_escal = np.zeros(tmax) # export price
 p_min = np.zeros(tmax) # minimum wage
 p_f = np.zeros(tmax) # price for fishers
+RFn = np.zeros(tmax) # revenue of fishers normalized
 RF = np.zeros(tmax) # revenue of fishers
 RT = np.zeros(tmax) # revenue of traders
 RA = np.zeros(tmax) # revenue all fishery
 G = np.zeros(tmax) # pay gap between fishers and traders
-RFn = np.zeros(tmax) # profit
+
+### Parameters #################################################################
+# scales: tons, years, MXNia, hours, trips
+if temperature == 0: ## isotherm depth
+    b1 = 41.750 # isotherm depth
+    b2 = -5.696 # isotherm depth
+    b3 = 16.397 # isotherm depth
+    l1 = -0.0028 # q, slope # SST l1 = -0.0059 # q, slope
+    l2 = 0.1667 # q, intersect # SST l2 = 0.1882 # q, intersect
+    qc = 0.1 # q, constant catchability
+    a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
+    tau[0] = 42. # isotherm depth
+if temperature == 1: #following parameters fitted to SST
+    b0 = -16.49 # SST trend
+    b1 = 0.02 # SST trend
+    b2 = 6.779 # SST trend
+    b3 = 0.091 # SST trend
+    l1 = -0.0059 # q, slope
+    l2 = 0.1882 # q, intersect
+    qc = 0.1 # catchability constant
+    a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+2015)))) # migration trigger
+    tau[0] = 30. # for SST
+if cost == 0: # old
+    c_t = 156076110 # cost of fishing
+if cost == 1: # new
+    c_t = 107291548 # cost of fishing
+
+f = 0 # intercept of trader cooperation
+d = 1 # slope of trader cooperation
+K = 1208770 # carrying capacity
+g = 1.4 # population growth rate
+gamma = 49200 # maximum demand
+beta = 0.0736 # slope of demand-price function
+c_p = 1776.25 # cost of processing
+w_m = 13355164 # min wage per hour all fleet
+
+h1 = 2E-10 # scale E
+h2 = 0.6596 # scale E
+B_h = 7.203 # hours per fisher
+B_f = 2 # fisher per panga
 
 ### Initial values #############################################################
-tau[0] = 30. # isotherm depth
-q[0] = 0.05 # squid catchability
-y_S[0] = 0.5 # proportion of migrated squid
-R_tt[0] = 0.5 # trader cooperation
-S[0] = 610075 # size of the squid population, mean
-E[0] = 0.5 # fishing effort
-C[0] = 60438 # squid catch mean
-p_e[0] = 52035 # mean p_e comtrade, rounded
-p_f[0] = 8997 # mean p_f datamares, rounded
-RFn[0] = 1 # mean p_f datamares, rounded
+if initial == 0: ## OLD
+    q[0] = 0.01 # squid catchability
+    y_S[0] = 0.5 # proportion of migrated squid
+    R_tt[0] = 0.5 # trader cooperation
+    S[0] = 1208770 # size of the squid population
+    E[0] = 1. # fishing effort
+    C[0] = 120877 # squid catch
+    p_e[0] = 99366 # max p_e comtrade
+    p_f[0] = 15438 # max p_f datamares
+
+if initial == 1: ## NEW
+    q[0] = 0.05 # squid catchability
+    y_S[0] = 0.5 # proportion of migrated squid
+    R_tt[0] = 0.5 # trader cooperation
+    S[0] = 610075 # size of the squid population, mean
+    E[0] = 0.5 # fishing effort
+    C[0] = 60438 # squid catch mean
+    p_e[0] = 52035 # mean p_e comtrade, rounded
+    p_f[0] = 8997 # mean p_f datamares, rounded
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -89,107 +116,144 @@ ml = df1['ML'] #
 ys = df1['y_S'] #
 
 ### New max time
-# tmax = len(y)
+tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag):
+def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
     for t in np.arange(1,tmax):
-        # sst trend
-        tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
-        # isotherm depth
-        # tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
+        if temperature == 0: # isotherm depth
+            tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
+        if temperature == 1: # sst trend
+            tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
 
-        # catchability sst
-        q[t]= l1 *tau[t] +l2
+        # mantle length and catchability
+        if mantle == 0:
+            if ml[t] == 1:
+                q[t]= l1 *tau[t] +l2
+            else:
+                ML[t]= ml[t]
+                q[t]= 0.0018 *ML[t] - 0.0318
+        if mantle == 1:
+            q[t]= l1 *tau[t] +l2
+
         if q[t] > 0.1:
             q[t] = 0.1
             print "q high"
         elif q[t] < 0:
             q[t] = 0
             print "q low"
-        # mantle length and catchability
-        # if ml[t] == 1:
-        #     q[t]= l1 *tau[t] +l2
-        # else:
-        #     ML[t]= ml[t]
-        #     q[t]= 0.0018 *ML[t] - 0.0318
 
         # migration of squid
-        y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
+        if mantle == 0: # USE DATA INPUT?
+            if ys[t] == 1: # run w/o data
+                if temperature == 0: # ISO
+                    y_S[t] = a1 *np.exp(tau[t]-b1)
+                if temperature == 1: # SST
+                    y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
+            else:
+                y_S[t]= ys[t] # run with data
+        if mantle == 1: # use simulation input
+            if temperature == 0: # ISO
+                y_S[t] = a1 *np.exp(tau[t]-b1)
+            if temperature == 1: # SST
+                y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
+
         if y_S[t] > 1:
             y_S[t] = 1
             print "yS high"
-        elif y_S[t] < 0.01:
-            y_S[t] = 0.01
+        elif y_S[t] < 0:
+            y_S[t] = 0
             print "yS low"
 
         # trader cooperation
-        R_tt[t] = (1-y_S[t])
+        if coop == 0: # LINEAR
+            R_tt[t] = (1-y_S[t])
+        if coop == 1: # EXPONENTIAL
+            R_tt[t]= f+ np.exp(-d* y_S[t])
 
         #### switch between models ####
         if flag == 0: # squid population BEM
             S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - qc *E[t-1] *S[t-1]
-        if flag == 1: # squid population MLM
+        if flag >= 1: # squid population MLM
             S[t] = S[t-1] +g *S[t-1] *(1- (S[t-1]/K)) - q[t-1] *E[t-1] *S[t-1]
 
         #### switch between models ####
         if flag == 0: # effort BEM
-            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
-        if flag == 1: # effort MLM
-            if e_calc == 0:
+            if effort == 0: # mechanistic
+                Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+                E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
+            if effort == 1: # constant
+                E[t] = 1.
+            if effort == 2: # logistic
+                RFn[t]= (RF[t-1])/(17622692)
+                if RFn[t]> 1:
+                    RFn[t] = 1
+                    print "RFn high"
+                elif RFn[t] < 0:
+                    RFn[t] = 0
+                    print "RFn low"
+
+                E[t] = 0.5 +1/(1+ np.exp(-RFn[t])*100)
+            if effort == 3: # proportional to catchability
+                E[t] = 10 *q[t]
+
+        if flag >= 1: # effort MLM
+            if effort == 0: # mechanistic
+                print "mechanistic"
                 Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
                 # fishing effort scaled
                 E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
-                if E[t] > 1:
-                    E[t] = 1
-                    print "E high"
-                elif E[t] < 0:
-                    E[t] = 0
-                    print "E low"
-
-            if e_calc == 1: # optimal effort calculation # doesnt work
-                e = Symbol('e')
-                print solve( p_f[t] *q[t] *e *S[t] -c_t *e, e )
-                # E[t]= e
-
-            if e_calc == 2: # logistic effort calculation
-                print "ef"
-                # E[t] = 1
+                E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
+            if effort == 1: # constant
+                print "constant"
+                E[t] = 1.
+            if effort == 2: # logistic
+                print "logistic"
                 RFn[t]= (RF[t-1])/(17622692)
                 # E[t] = RFn[t]
                 E[t] = 0.5 +1/(1+ np.exp(-RFn[t])*100)
+            if effort == 3: # proportional to catchability
+                print "proportional"
+                E[t] = 10 *q[t]
+
+        if E[t] > 1:
+            E[t] = 1
+            print "E high"
+        elif E[t] < 0:
+            E[t] = 0
+            print "E low"
 
         #### switch between models ####
         if flag == 0: # catch BEM
             C[t] = qc *E[t] *S[t]
-        if flag == 1: # catch MLM
+        if flag >= 1: # catch MLM
             C[t] = q[t] *E[t] *S[t]
 
-        if C[t] <= 0:
-            C[t] = 1
-            print "C low"
-        elif C[t] > 0:
-            C[t] = C[t]
+        if C[t] <= 0: # avoid infinity calculations
+            C[t]= 1
 
         # export price
         p_e[t] = gamma* (C[t])**(-beta)
-        if p_e[t]>= 99366:
-            p_e[t]= 99366
+        if p_e[t] >= 99366:
+            p_e[t] = 99366
             print "pe high"
 
         #### switch between models ####
-        if flag == 0:
+        if flag == 0: # BEM
             # price for fishers
             p_f[t] = p_e[t] -c_p
-            print "BEM"
-        if flag == 1:
-            ## minimum wage new
-            p_min[t]= (c_t *E[t])/C[t] # -> must be MXN/ton to fit into p_f calc
-            # minimum wage old
-            # p_min[t]= (E[t] *w_m)/C[t]
+        if flag == 2: # BEM with tau
+            p_f[t] = p_e[t] -c_p    # price for fishers
+        if flag == 1: #MLM
+            if wage == 0: # minimum wage old
+                p_min[t]= (E[t] *w_m)/C[t]
+            if wage == 1: # minimum wage new
+                p_min[t]= (c_t *E[t])/C[t] # ->must be MXN/ton to fit into p_f calc
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
-            print "MLM"
+
+        if p_f[t] >= (p_e[t] -c_p): # limit price of fishers
+            p_f[t] = (p_e[t] -c_p)
 
         # revenue of fishers
         RF[t] = C[t] *p_f[t] -c_t *E[t]
@@ -201,207 +265,309 @@ def model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, g
         # pay gap
         G[t] = RF[t]/RT[t]
 
-        print q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t], G[t]
-    return tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G
+        # print t, tau[t], ML[t], q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t]
+    return tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
 ################################################################################
 
 ##### Initiate arrays ##########################################################
-sim = np.arange(0,1) # number of simulations
-x = np.zeros(10) # set array to save parameters
+sim = np.arange(0,100) # number of simulations
+if temperature == 0: # ISO
+    x = np.zeros(11) # set array to save parameters
+if temperature == 1: # SST
+    x = np.zeros(12) # set array to save parameters
 par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of each simulation
 cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
-pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices for fishers in each time period of each simulation
-
-### extra variables to monitor
-tem = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save tau in each time period of each simulation
-mig = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save migrate squid in each time period of each simulation
-cco = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catchability in each time period of each simulation
-pop = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save squid population in each time period of each simulation
-eff = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save effort in each time period of each simulation
-mar = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save market prices in each time period of each simulation
+pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices in each time period of each simulation
 
 ##### Run the model ############################################################
 for j in range(0,sim.shape[0]): # draw randomly a float in the range of values for each parameter
-    # mute the random selection to choose your parameter values
-    # b0 = np.random.uniform(-5.15, -27.83)
-    # b1 = np.random.uniform(0.026, 0.014)
-    # b2 = np.random.uniform(6.859, 6.699)
-    # b3 = np.random.uniform(0.171, 0.011)
-    # beta = np.random.uniform(0.01, 0.1)
-    # c_p = np.random.uniform(1000, 2148)
-    # g = np.random.uniform(0, 2.9)
-    # gamma = np.random.uniform(2000, 51000)
-    # m = np.random.uniform(2368793, 8450159)
-    # w_m = np.random.uniform(58528541, 156076110)
+    qc = np.random.uniform(0.01, 0.5)
+    d = np.random.uniform(0.5, 1.5)
+    g = np.random.uniform(0, 2.9)
+    gamma = np.random.uniform(20000, 51000)
+    beta = np.random.uniform(0.01, 0.1)
+    c_p = np.random.uniform(1000, 2148)
+    c_t = np.random.uniform(50907027, 212300758)
+    w_m = np.random.uniform(11956952, 28108539)
 
-    x = [b0, b1, b2, b3, beta, c_p, g, gamma, c_t , w_m]
+    if temperature == 0: # ISO
+        b1 = np.random.uniform(38.750, 42.1) # isotherm
+        b2 = np.random.uniform(-3.987, -6.9) # isotherm
+        b3 = np.random.uniform(11.478, 16.4) # isotherm
+        x = [b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
+
+    if temperature == 1: # SST
+        b0 = np.random.uniform(-5.15, -27.83) #SST
+        b1 = np.random.uniform(0.026, 0.014) #SST
+        b2 = np.random.uniform(6.859, 6.699) #SST
+        b3 = np.random.uniform(0.171, 0.011) #SST
+        x = [b0, b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
+
     par[j] = x
-    print par
 
+    OUT = np.zeros(tau.shape[0])
     OUT1 = np.zeros(tau.shape[0])
-    OUT2 = np.zeros(tau.shape[0])
-    OUT3 = np.zeros(tau.shape[0])
-    OUT4 = np.zeros(tau.shape[0])
-    OUT5 = np.zeros(tau.shape[0])
-    OUT6 = np.zeros(tau.shape[0])
-    OUT7 = np.zeros(tau.shape[0])
-    OUT8 = np.zeros(tau.shape[0])
-    OUT9 = np.zeros(tau.shape[0])
 
-    for i in np.arange(0,1):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, G = model(b0, b1, b2, b3, n1, n2, l1, l2, qc, a1, g, K, c_t, B_h, B_f, h1, h2, gamma, beta, c_p, w_m, flag)
-            OUT1[i]= p_f[i]
-            OUT2[i]= C[i]
-            OUT3[i]= tau[i]
-            OUT4[i]= y_S[i]
-            OUT5[i]= q[i]
-            OUT6[i]= S[i]
-            OUT7[i]= E[i]
-            OUT8[i]= p_e[i]
-            OUT9[i]= G[i]
-            print "END"
-            print "b0", b0, b0 -(-16.49)
-            print "b1", b1, b1 -(0.02)
-            print "b2", b2, b2 -(6.779)
-            print "b3", b3, b3 -(0.091)
-            print "beta", beta, beta-(0.0736)
-            print "c_p", c_p, c_p -(1776.25)
-            print "g", g, g -(1.4)
-            print "gamma", gamma, gamma -(49200)
-            print "c_t", c_t , c_t -(156076110)
-            print "w_m", w_m, w_m -(13355164)
+    for i in np.arange(1,tmax):
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
+            OUT[i]= p_f[i]
+            OUT1[i]= C[i]
+            pri[j,i] = OUT[i]
+            cat[j,i] = OUT1[i]
 
-# activate this area only as you have 1 < MC runs
-            # pri[j,i] = OUT1[i]
-            # cat[j,i] = OUT2[i]
-            # tem[j,i] = OUT3[i]
-            # mig[j,i] = OUT4[i]
-            # cco[j,i] = OUT5[i]
-            # pop[j,i] = OUT6[i]
-            # eff[j,i] = OUT7[i]
-            # mar[j,i] = OUT8[i]
 
-# lowC = np.zeros(y.shape[0]) # initiate variables for 95% confidence interval
-# highC = np.zeros(y.shape[0])
-# meanC = np.zeros(y.shape[0])
-# lowP = np.zeros(y.shape[0])
-# highP = np.zeros(y.shape[0])
-# meanP = np.zeros(y.shape[0])
-#
-# for h in range(0,y.shape[0]): # calculate the 95% confidence interval
-#     z = cat[:,h]
-#     lowC[h] = np.nanmean(z) - ((1.96 * np.nanstd(z))/np.sqrt(np.count_nonzero(~np.isnan(z))))
-#     highC[h] = np.nanmean(z) + ((1.96 * np.nanstd(z))/np.sqrt(np.count_nonzero(~np.isnan(z))))
-#     meanC[h] = np.nanmean(z)
-#     zeta = pri[:,h]
-#     lowP[h] = np.nanmean(zeta) - ((1.96 * np.nanstd(zeta))/np.sqrt(np.count_nonzero(~np.isnan(zeta))))
-#     highP[h] = np.nanmean(zeta) + ((1.96 * np.nanstd(zeta))/np.sqrt(np.count_nonzero(~np.isnan(zeta))))
-#     meanP[h] = np.nanmean(zeta)
+lowC = np.zeros(y.shape[0]) # initiate variables for 95% confidence interval
+highC = np.zeros(y.shape[0])
+meanC = np.zeros(y.shape[0])
+lowP = np.zeros(y.shape[0])
+highP = np.zeros(y.shape[0])
+meanP = np.zeros(y.shape[0])
+
+for h in range(0,y.shape[0]): # calculate the 95% confidence interval
+    z = cat[:,h]
+    lowC[h] = np.nanmean(z) - ((1.96 * np.nanstd(z))/np.sqrt(np.count_nonzero(~np.isnan(z))))
+    highC[h] = np.nanmean(z) + ((1.96 * np.nanstd(z))/np.sqrt(np.count_nonzero(~np.isnan(z))))
+    meanC[h] = np.nanmean(z)
+    zeta = pri[:,h]
+    lowP[h] = np.nanmean(zeta) - ((1.96 * np.nanstd(zeta))/np.sqrt(np.count_nonzero(~np.isnan(zeta))))
+    highP[h] = np.nanmean(zeta) + ((1.96 * np.nanstd(zeta))/np.sqrt(np.count_nonzero(~np.isnan(zeta))))
+    meanP[h] = np.nanmean(zeta)
+
+################################################################################
+###########################  PLOT TEST  ########################################
+################################################################################
+
+### Load dataset ###############################################################
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+#! load columns
+yr = df1['year'] #
+pe = df1['pe_MXNiat'] #
+pf = df1['pf_MXNiat'] #
+ct = df1['C_t'] #
+ssh = df1['essh_avg'] #
+ml = df1['ML'] #
+ys = df1['y_S'] #
+
+df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
+# Load columns
+VolAll = df2['tons_DM'] ## CATCH DATA
+PrAll = df2['priceMXNia_DM'] ## PRICE DATA
+x = np.arange(0,len(yr))
+
+hfont = {'fontname':'Helvetica'}
+
+fig = plt.figure()
+# add the first axes using subplot populated with predictions
+ax1 = fig.add_subplot(111)
+line1, = ax1.plot(meanP, label = "MLM", color="orange")
+line2, = ax1.plot(PrAll, label = "data", color = "indianred")
+ax1.fill_between(x, highP, lowP, where = highP >= lowP, facecolor='orange', alpha= 0.3, zorder = 0)
+# add the second axes using subplot with ML
+ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+line3, = ax2.plot(ml, color="lightgrey")
+# x-axis
+ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax1.set_xlim(10,tmax-2)
+ax1.set_xlabel("Year",fontsize=20, **hfont)
+ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax2.set_xlim(10,tmax-2)
+ax2.set_xlabel("Year",fontsize=20, **hfont)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
+# y-axis
+ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
+# legend
+plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
+# save and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
+plt.show()
+
+
+fig = plt.figure()
+# add the first axes using subplot populated with predictions
+ax1 = fig.add_subplot(111)
+line1, = ax1.plot(meanC, label = "MLM", color="orange")
+line2, = ax1.plot(VolAll, label = "data", color = "indianred")
+ax1.fill_between(x, highC, lowC, where = highC >= lowC, facecolor='orange', alpha= 0.3, zorder = 0)
+# add the second axes using subplot with ML
+ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+line3, = ax2.plot(ml, color="lightgrey")
+# x-axis
+ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax1.set_xlim(10,tmax-2)
+ax1.set_xlabel("Year",fontsize=20, **hfont)
+ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax2.set_xlim(10,tmax-2)
+ax2.set_xlabel("Year",fontsize=20, **hfont)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
+# y-axis
+ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
+# legend
+plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
+# save and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
+plt.show()
+
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanP[10:-1])
+print ("st error:", std_err)
+print("r-squared price:", r_value**2)
+print ("p-value:", scipy.stats.pearsonr(PrAll[10:-1], meanP[10:-1]))
+
+### catch
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanC[10:-1])
+print ("st error:", std_err)
+print("r-squared catch:", r_value**2)
+print ("p-value:", scipy.stats.pearsonr(VolAll[10:-1], meanC[10:-1]))
+
+
+##### Save data  ###############################################################
+# if flag == 0:
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy", meanP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy", meanC)
+# if flag == 1:
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy", meanP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
+
 
 ################################################################################
 ###########################  PLOT FILE  ########################################
 ################################################################################
-
-### New max time ###############################################################
-# yr = np.arange(0,27)
+#
+#
+# #### Load data  ###############################################################
+# NoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
+# NoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
+# highNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
+# highNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy")
+# lowNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy")
+# lowNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy")
+# meanNoR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy")
+# meanNoR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
+#
+# R_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_pf.npy")
+# R_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_C.npy")
+# highR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
+# highR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy")
+# lowR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy")
+# lowR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
+# meanR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy")
+# meanR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
+#
+# ### Load dataset ###############################################################
+# df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+# #! load columns
+# yr = df1['year'] #
+# pe = df1['pe_MXNiat'] #
+# pf = df1['pf_MXNiat'] #
+# ct = df1['C_t'] #
+# ssh = df1['essh_avg'] #
+# ml = df1['ML'] #
+# ys = df1['y_S'] #
+#
+# df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
+# # Load columns
+# VolAll = df2['tons_DM'] ## CATCH DATA
+# PrAll = df2['priceMXNia_DM'] ## PRICE DATA
+#
+# ### New max time ###############################################################
 # tmax = len(yr)
 # x = np.arange(0,len(yr))
-
-### font ######################################################################
-hfont = {'fontname':'Helvetica'}
-
-#####! PLOT MODEL  #############################################################
-# Three subplots sharing both x/y axes
-f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-# axis 1
-ax1.plot(tau, label = "tau", color="orange")
-ax1.set_title('Temperature')
-ax1.legend(loc="best")
-# axis 2
-ax2.plot(y_S, label = "migration", color="orange")
-ax2.plot(q, label = "catchability", color="steelblue")
-ax2.plot(E, label = "effort", color="red")
-ax2.plot(G, label = "pay gap", color="green")
-ax2.legend(loc="best")
-# axis 3
-ax3.plot(C, label = "catch", color="orange")
-ax3.plot(S, label = "population", color="steelblue")
-ax3.legend(loc="best")
-# axis 4
-ax4.plot(p_f, label = "price for fishers", color="orange")
-ax4.plot(p_e, label = "market price", color="steelblue")
-ax4.legend(loc="best")
-# Fine-tune figure; make subplots close to each other and hide x ticks for
-# all but bottom plot.
-f.subplots_adjust(hspace=0.2)
-plt.show()
-
 #
-# # plot tau
+# ### font ######################################################################
+# hfont = {'fontname':'Helvetica'}
+#
+# #####! PLOT MODEL  #############################################################
 # fig = plt.figure()
-# ax1 = fig.add_subplot(121)
-# a, = plt.plot(OUT3, label = "tau", color="orange")
+# # add the first axes using subplot populated with predictions
+# ax1 = fig.add_subplot(111)
+# line1, = ax1.plot(meanR_P, label = "MLM", color="orange")
+# line2, = ax1.plot(meanNoR_P, label = "BEM", color="steelblue")
+# line3, = ax1.plot(PrAll, label = "data", color = "indianred")
+# ax1.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
+# ax1.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# # add the second axes using subplot with ML
+# ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+# line4, = ax2.plot(ml, color="lightgrey")
 # # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
+# ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+# ax1.set_xlim(10,tmax-2)
+# ax1.set_xlabel("Year",fontsize=20, **hfont)
+# ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+# ax2.set_xlim(10,tmax-2)
+# ax2.set_xlabel("Year",fontsize=20, **hfont)
+# ax2.yaxis.tick_right()
+# ax2.yaxis.set_label_position("right")
 # # y-axis
-# plt.ylabel("Temperature",fontsize=22, **hfont)
+# ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+# plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # # legend
-# plt.legend(handles=[a], loc='best', fontsize=14)
+# plt.legend([line1, line2, line3, line4], ["MLM", "BEM", "Data", "Mantle length"], fontsize= 11)
 # # save and show
+# # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
 # plt.show()
 #
-# # plot y_S, q, E
 # fig = plt.figure()
-# a, = plt.plot(OUT4, label = "migration", color="orange")
-# b, = plt.plot(OUT5, label = "catchability", color="steelblue")
-# c, = plt.plot(OUT7, label = "effort", color="red")
+# # add the first axes using subplot populated with predictions
+# ax1 = fig.add_subplot(111)
+# line1, = ax1.plot(meanR_C, label = "MLM", color="orange")
+# line2, = ax1.plot(meanNoR_C, label = "BEM", color="steelblue")
+# line3, = ax1.plot(VolAll, label = "data", color = "indianred")
+# ax1.fill_between(x, highR_C, lowR_C, where = highNoR_C >= lowNoR_C, facecolor='orange', alpha= 0.3, zorder = 0)
+# ax1.fill_between(x, highNoR_C, lowNoR_C, where = highNoR_C >= lowNoR_C, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# # add the second axes using subplot with ML
+# ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+# line4, = ax2.plot(ml, color="lightgrey")
 # # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
+# ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+# ax1.set_xlim(10,tmax-2)
+# ax1.set_xlabel("Year",fontsize=20, **hfont)
+# ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+# ax2.set_xlim(10,tmax-2)
+# ax2.set_xlabel("Year",fontsize=20, **hfont)
+# ax2.yaxis.tick_right()
+# ax2.yaxis.set_label_position("right")
 # # y-axis
-# plt.ylabel("See legend",fontsize=22, **hfont)
+# ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
+# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+# plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # # legend
-# plt.legend(handles=[a,b,c], loc='best', fontsize=14)
+# plt.legend([line1, line2, line3, line4], ["MLM", "BEM", "Data", "Mantle length"], fontsize= 11)
 # # save and show
+# # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
 # plt.show()
 #
-# # plot S, C
-# fig = plt.figure()
-# a, = plt.plot(OUT2, label = "catch", color="orange")
-# b, = plt.plot(OUT6, label = "population", color="steelblue")
-# # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
-# # y-axis
-# plt.ylabel("volume $tons$",fontsize=22, **hfont)
-# # legend
-# plt.legend(handles=[a,b], loc='best', fontsize=14)
-# # save and show
-# plt.show()
+# ### CALCULATE r squared ########################################################
+# ### price for fishers
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanR_P[10:-1])
+# print("r-squared price MLM:", r_value**2)
+# scipy.stats.pearsonr(PrAll[10:-1], meanR_P[10:-1])
 #
-# # plot pf, pe
-# fig = plt.figure()
-# a, = plt.plot(OUT1, label = "price for fishers", color="orange")
-# b, = plt.plot(OUT8, label = "market price", color="steelblue")
-# # x-axis
-# plt.xticks(np.arange(len(yr)), yr, rotation=45, fontsize=12)
-# # plt.xlim(10,tmax-2)
-# plt.xlabel("Year",fontsize=22, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15)
-# # y-axis
-# plt.ylabel("price $MXN$",fontsize=22, **hfont)
-# # legend
-# plt.legend(handles=[a,b], loc='best', fontsize=14)
-# # save and show
-# plt.show()
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanNoR_P[10:-1])
+# print("r-squared price BEM:", r_value**2)
+# scipy.stats.pearsonr(PrAll[10:-1], meanNoR_P[10:-1])
 #
+# ### catch
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanR_C[10:-1])
+# print("r-squared catch MLM:", r_value**2)
+# scipy.stats.pearsonr(VolAll[10:-1], meanR_C[10:-1])
+#
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanNoR_C[10:-1])
+# print("r-squared catch BEM:", r_value**2)
+# scipy.stats.pearsonr(VolAll[10:-1], meanNoR_C[10:-1])
