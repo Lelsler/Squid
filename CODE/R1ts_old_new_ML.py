@@ -306,12 +306,12 @@ ax1.set_xlabel("Year",fontsize=20, **hfont)
 ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
 ax2.set_xlim(10,tmax-2)
 ax2.set_xlabel("Year",fontsize=20, **hfont)
-ax2.yaxis.tick_right()
-ax2.yaxis.set_label_position("right")
 # y-axis
 ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
 # legend
 plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
 # save and show
