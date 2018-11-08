@@ -282,6 +282,20 @@ par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of e
 cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
 pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices in each time period of each simulation
 
+### extra variables to monitor
+tem = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save tau in each time period of each simulation
+mig = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save migrate squid in each time period of each simulation
+cco = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catchability in each time period of each simulation
+pop = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save squid population in each time period of each simulation
+eff = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save effort in each time period of each simulation
+mar = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save market prices in each time period of each simulation
+
+gap = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save revenue gap
+rvf = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save income fishers
+rvt = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save income traders
+rva = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save revenue fishery
+
+
 ##### Run the model ############################################################
 for j in range(0,sim.shape[0]): # draw randomly a float in the range of values for each parameter
     qc = np.random.uniform(0.01, 0.5)
@@ -308,16 +322,45 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
 
     par[j] = x
 
-    OUT = np.zeros(tau.shape[0])
     OUT1 = np.zeros(tau.shape[0])
+    OUT2 = np.zeros(tau.shape[0])
+    OUT3 = np.zeros(tau.shape[0])
+    OUT4 = np.zeros(tau.shape[0])
+    OUT5 = np.zeros(tau.shape[0])
+    OUT6 = np.zeros(tau.shape[0])
+    OUT7 = np.zeros(tau.shape[0])
+    OUT8 = np.zeros(tau.shape[0])
+    OUT9 = np.zeros(tau.shape[0])
+    OUT10 = np.zeros(tau.shape[0])
+    OUT11 = np.zeros(tau.shape[0])
+    OUT12 = np.zeros(tau.shape[0])
 
     for i in np.arange(1,tmax):
             tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
-            OUT[i]= p_f[i]
-            OUT1[i]= C[i]
-            pri[j,i] = OUT[i]
-            cat[j,i] = OUT1[i]
-
+            OUT1[i]= p_f[i]
+            OUT2[i]= C[i]
+            OUT3[i]= tau[i]
+            OUT4[i]= y_S[i]
+            OUT5[i]= q[i]
+            OUT6[i]= S[i]
+            OUT7[i]= E[i]
+            OUT8[i]= p_e[i]
+            OUT9[i]= G[i]
+            OUT10[i]= RF[i]
+            OUT11[i]= RT[i]
+            OUT12[i]= RA[i]
+            pri[j,i] = OUT1[i]
+            cat[j,i] = OUT2[i]
+            tem[j,i] = OUT3[i]
+            mig[j,i] = OUT4[i]
+            cco[j,i] = OUT5[i]
+            pop[j,i] = OUT6[i]
+            eff[j,i] = OUT7[i]
+            mar[j,i] = OUT8[i]
+            gap[j,i] = OUT9[i]
+            rvf[j,i] = OUT10[i]
+            rvt[j,i] = OUT11[i]
+            rva[j,i] = OUT12[i]
 
 lowC = np.zeros(y.shape[0]) # initiate variables for 95% confidence interval
 highC = np.zeros(y.shape[0])
@@ -430,20 +473,27 @@ print ("p-value:", scipy.stats.pearsonr(VolAll[10:-1], meanC[10:-1]))
 
 ##### Save data  ###############################################################
 # if flag == 0:
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy", lowC)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy", highC)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy", lowP)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy", highP)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy", meanP)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy", meanC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_meanP.npy", meanP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_meanC.npy", meanC)
 # if flag == 1:
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy", lowC)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy", highC)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy", lowP)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy", highP)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy", meanP)
-#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy", meanC)
-
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_meanP.npy", meanP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_meanC.npy", meanC)
+# if flag == 2:
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_OR_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_OR_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_OR_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_OR_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_OR_meanP.npy", meanP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_OR_meanC.npy", meanC)
+#
 
 ################################################################################
 ###########################  PLOT FILE  ########################################
@@ -453,21 +503,21 @@ print ("p-value:", scipy.stats.pearsonr(VolAll[10:-1], meanC[10:-1]))
 # #### Load data  ###############################################################
 # NoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
 # NoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
-# highNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
-# highNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy")
-# lowNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy")
-# lowNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy")
-# meanNoR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanC.npy")
-# meanNoR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
+# highNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_highP.npy")
+# highNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_highC.npy")
+# lowNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_lowP.npy")
+# lowNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_lowC.npy")
+# meanNoR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_meanC.npy")
+# meanNoR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_NoR_meanP.npy")
 #
 # R_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_pf.npy")
 # R_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesR_C.npy")
-# highR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
-# highR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy")
-# lowR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy")
-# lowR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
-# meanR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanC.npy")
-# meanR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
+# highR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_highP.npy")
+# highR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_highC.npy")
+# lowR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_lowP.npy")
+# lowR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_lowC.npy")
+# meanR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_meanC.npy")
+# meanR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/test_effort_R_meanP.npy")
 #
 # ### Load dataset ###############################################################
 # df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
