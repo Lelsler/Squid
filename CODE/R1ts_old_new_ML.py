@@ -8,12 +8,12 @@ import scipy
 from pandas import *
 
 #################### CHOICES ###################################################
-flag = 2 # 0 = NoR model; 1 = Rmodel, # 2 = in-btw model
+flag = 1 # 0 = NoR model; 1 = Rmodel, # 2 = in-btw model
 # SST or isotherm: parameters, initial condition for tau, and MC parameter ranges
 temperature = 1 # iso = 0, SST = 1
 cost = 1 # 0 = old, 1 = new
 initial = 1 # 0 = old, 1 = new
-mantle = 0 # 0 = use mantle, 1 = use tau
+mantle = 1 # 0 = use mantle, 1 = use tau
 coop = 1 # 0 = old, 1 = new
 wage = 1 # 0 = old, 1 = new
 effort = 0 # 0 = mechanistic, 1= constant, 2 = logistic, 3 = proportional to q
@@ -411,155 +411,31 @@ for h in range(0,y.shape[0]): # calculate the 95% confidence interval
 ################################################################################
 ###########################  PLOT FILE  ########################################
 ################################################################################
-
-
-#### Load data  #R1support2_95_NoR_meanC.npy##############################################################
-NoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
-NoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
-lowNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy")
-highNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
-meanNoR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
-lowNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy")
-highNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy")
-meanNoR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_meanC.npy")
-
-lowR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy")
-highR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
-meanR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
-lowR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
-highR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy")
-meanR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_meanC.npy")
-
-lowOR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_OR_lowP.npy")
-highOR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_OR_highP.npy")
-meanOR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_OR_meanP.npy")
-lowOR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_OR_lowC.npy")
-highOR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_OR_highC.npy")
-meanOR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_OR_meanC.npy")
-
-### Load dataset ###############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
-#! load columns
-yr = df1['year'] #
-pe = df1['pe_MXNiat'] #
-pf = df1['pf_MXNiat'] #
-ct = df1['C_t'] #
-ssh = df1['essh_avg'] #
-ml = df1['ML'] #
-ys = df1['y_S'] #
-
-df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
-# Load columns
-VolAll = df2['tons_DM'] ## CATCH DATA
-PrAll = df2['priceMXNia_DM'] ## PRICE DATA
-
-### New max time ###############################################################
-tmax = len(yr)
-x = np.arange(0,len(yr))
-
-### font ######################################################################
-hfont = {'fontname':'Helvetica'}
-
-#####! PLOT MODEL  #############################################################
-fig = plt.figure()
-# add the first axes using subplot populated with predictions
-ax1 = fig.add_subplot(111)
-line1, = ax1.plot(meanR_P, label = "MLM", color="orange")
-line2, = ax1.plot(meanOR_P, label = "BLM", color="sage")
-line3, = ax1.plot(meanNoR_P, label = "BEM", color="steelblue")
-line4, = ax1.plot(PrAll, label = "data", color = "indianred")
-ax1.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
-ax1.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='steelblue', alpha= 0.3, zorder = 0)
-ax1.fill_between(x, highOR_pf, lowOR_pf, where = highOR_pf >= lowOR_pf, facecolor='sage', alpha= 0.3, zorder = 0)
-# add the second axes using subplot with ML
-ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-line5, = ax2.plot(ml, color="lightgrey")
-# x-axis
-ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
-ax1.set_xlim(10,tmax-2)
-ax1.set_xlabel("Year",fontsize=20, **hfont)
-ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
-ax2.set_xlim(10,tmax-2)
-ax2.set_xlabel("Year",fontsize=20, **hfont)
-# y-axis
-ax2.yaxis.tick_right()
-ax2.yaxis.set_label_position("right")
-ax2.set_ylim(0,140)
-ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
-ax2.tick_params(axis='y', colors='lightgrey')
-plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
-# legend
-plt.legend([line1, line2, line3, line4], ["MLM", "BLM", "BEM", "Data"], fontsize= 11)
-# save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
-plt.show()
-
-fig = plt.figure()
-# add the first axes using subplot populated with predictions
-ax1 = fig.add_subplot(111)
-line1, = ax1.plot(meanR_C, label = "MLM", color="orange")
-line2, = ax1.plot(meanOR_C, label = "BLM", color="sage")
-line3, = ax1.plot(meanNoR_C, label = "BEM", color="steelblue")
-line4, = ax1.plot(VolAll, label = "data", color = "indianred")
-ax1.fill_between(x, highR_C, lowR_C, where = highR_C >= lowR_C, facecolor='orange', alpha= 0.3, zorder = 0)
-ax1.fill_between(x, highNoR_C, lowNoR_C, where = highNoR_C >= lowNoR_C, facecolor='steelblue', alpha= 0.3, zorder = 0)
-ax1.fill_between(x, highOR_C, lowOR_C, where = highOR_C >= lowOR_C, facecolor='sage', alpha= 0.3, zorder = 0)
-# add the second axes using subplot with ML
-ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-line5, = ax2.plot(ml, color="lightgrey")
-# x-axis
-ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
-ax1.set_xlim(10,tmax-2)
-ax1.set_xlabel("Year",fontsize=20, **hfont)
-ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
-ax2.set_xlim(10,tmax-2)
-ax2.set_xlabel("Year",fontsize=20, **hfont)
-ax2.yaxis.tick_right()
-ax2.yaxis.set_label_position("right")
-# y-axis
-ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax1.set_ylim(0,3E5)
-ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
-ax2.set_ylim(0,140)
-ax2.tick_params(axis='y', colors='lightgrey')
-plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
-# legend
-plt.legend([line1, line2, line3, line4], ["MLM", "BLM", "BEM", "Data"], loc=1, fontsize= 11)
-# save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
-plt.show()
-
-### CALCULATE r squared ########################################################
-### price for fishers
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanR_P[10:-1])
-print("r-squared price MLM:", r_value**2)
-scipy.stats.pearsonr(PrAll[10:-1], meanR_P[10:-1])
-
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanNoR_P[10:-1])
-print("r-squared price BEM:", r_value**2)
-scipy.stats.pearsonr(PrAll[10:-1], meanNoR_P[10:-1])
-
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanOR_P[10:-1])
-print("r-squared price BLM:", r_value**2)
-scipy.stats.pearsonr(PrAll[10:-1], meanOR_P[10:-1])
-
-### catch
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanR_C[10:-1])
-print("r-squared catch MLM:", r_value**2)
-scipy.stats.pearsonr(VolAll[10:-1], meanR_C[10:-1])
-
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanNoR_C[10:-1])
-print("r-squared catch BEM:", r_value**2)
-scipy.stats.pearsonr(VolAll[10:-1], meanNoR_C[10:-1])
-
-slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanOR_C[10:-1])
-print("r-squared catch BLM:", r_value**2)
-scipy.stats.pearsonr(VolAll[10:-1], meanOR_C[10:-1])
-
-################################################################################
-###########################  PLOT TEST - direclty plots from model output  #####
-################################################################################
+#
+#
+# #### Load data  #R1support2_95_NoR_meanC.npy##############################################################
+# NoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_pf.npy")
+# NoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/timeSeriesNoR_C.npy")
+# lowNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_lowP.npy")
+# highNoR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_highP.npy")
+# meanNoR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_NoR_meanP.npy")
+# lowNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_lowC.npy")
+# highNoR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_highC.npy")
+# meanNoR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_NoR_meanC.npy")
+#
+# lowR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_lowP.npy")
+# highR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_highP.npy")
+# meanR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_R_meanP.npy")
+# lowR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_lowC.npy")
+# highR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_highC.npy")
+# meanR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_R_meanC.npy")
+#
+# lowOR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_OR_lowP.npy")
+# highOR_pf = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_OR_highP.npy")
+# meanOR_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support1_95_OR_meanP.npy")
+# lowOR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_OR_lowC.npy")
+# highOR_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_OR_highC.npy")
+# meanOR_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R1support2_95_OR_meanC.npy")
 #
 # ### Load dataset ###############################################################
 # df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
@@ -576,19 +452,28 @@ scipy.stats.pearsonr(VolAll[10:-1], meanOR_C[10:-1])
 # # Load columns
 # VolAll = df2['tons_DM'] ## CATCH DATA
 # PrAll = df2['priceMXNia_DM'] ## PRICE DATA
+#
+# ### New max time ###############################################################
+# tmax = len(yr)
 # x = np.arange(0,len(yr))
 #
+# ### font ######################################################################
 # hfont = {'fontname':'Helvetica'}
 #
+# #####! PLOT MODEL  #############################################################
 # fig = plt.figure()
 # # add the first axes using subplot populated with predictions
 # ax1 = fig.add_subplot(111)
-# line1, = ax1.plot(meanP, label = "MLM", color="orange")
-# line2, = ax1.plot(PrAll, label = "data", color = "indianred")
-# ax1.fill_between(x, highP, lowP, where = highP >= lowP, facecolor='orange', alpha= 0.3, zorder = 0)
+# line1, = ax1.plot(meanR_P, label = "MLM", color="orange")
+# line2, = ax1.plot(meanOR_P, label = "BLM", color="sage")
+# line3, = ax1.plot(meanNoR_P, label = "BEM", color="steelblue")
+# line4, = ax1.plot(PrAll, label = "data", color = "indianred")
+# ax1.fill_between(x, highR_pf, lowR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='orange', alpha= 0.3, zorder = 0)
+# ax1.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# ax1.fill_between(x, highOR_pf, lowOR_pf, where = highOR_pf >= lowOR_pf, facecolor='sage', alpha= 0.3, zorder = 0)
 # # add the second axes using subplot with ML
 # ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-# line3, = ax2.plot(ml, color="lightgrey")
+# line5, = ax2.plot(ml, color="lightgrey")
 # # x-axis
 # ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
 # ax1.set_xlim(10,tmax-2)
@@ -597,27 +482,32 @@ scipy.stats.pearsonr(VolAll[10:-1], meanOR_C[10:-1])
 # ax2.set_xlim(10,tmax-2)
 # ax2.set_xlabel("Year",fontsize=20, **hfont)
 # # y-axis
-# ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
-# plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # ax2.yaxis.tick_right()
 # ax2.yaxis.set_label_position("right")
+# ax2.set_ylim(0,140)
+# ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+# ax2.tick_params(axis='y', colors='lightgrey')
+# plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # # legend
-# plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
+# plt.legend([line1, line2, line3, line4], ["MLM", "BLM", "BEM", "Data"], fontsize= 11)
 # # save and show
 # # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
 # plt.show()
 #
-#
 # fig = plt.figure()
 # # add the first axes using subplot populated with predictions
 # ax1 = fig.add_subplot(111)
-# line1, = ax1.plot(meanC, label = "MLM", color="orange")
-# line2, = ax1.plot(VolAll, label = "data", color = "indianred")
-# ax1.fill_between(x, highC, lowC, where = highC >= lowC, facecolor='orange', alpha= 0.3, zorder = 0)
+# line1, = ax1.plot(meanR_C, label = "MLM", color="orange")
+# line2, = ax1.plot(meanOR_C, label = "BLM", color="sage")
+# line3, = ax1.plot(meanNoR_C, label = "BEM", color="steelblue")
+# line4, = ax1.plot(VolAll, label = "data", color = "indianred")
+# ax1.fill_between(x, highR_C, lowR_C, where = highR_C >= lowR_C, facecolor='orange', alpha= 0.3, zorder = 0)
+# ax1.fill_between(x, highNoR_C, lowNoR_C, where = highNoR_C >= lowNoR_C, facecolor='steelblue', alpha= 0.3, zorder = 0)
+# ax1.fill_between(x, highOR_C, lowOR_C, where = highOR_C >= lowOR_C, facecolor='sage', alpha= 0.3, zorder = 0)
 # # add the second axes using subplot with ML
 # ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-# line3, = ax2.plot(ml, color="lightgrey")
+# line5, = ax2.plot(ml, color="lightgrey")
 # # x-axis
 # ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
 # ax1.set_xlim(10,tmax-2)
@@ -629,21 +519,131 @@ scipy.stats.pearsonr(VolAll[10:-1], meanOR_C[10:-1])
 # ax2.yaxis.set_label_position("right")
 # # y-axis
 # ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
+# ax1.set_ylim(0,3E5)
 # ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+# ax2.set_ylim(0,140)
+# ax2.tick_params(axis='y', colors='lightgrey')
 # plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # # legend
-# plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
+# plt.legend([line1, line2, line3, line4], ["MLM", "BLM", "BEM", "Data"], loc=1, fontsize= 11)
 # # save and show
 # # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
 # plt.show()
 #
-# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanP[10:-1])
-# print ("st error:", std_err)
-# print("r-squared price:", r_value**2)
-# print ("p-value:", scipy.stats.pearsonr(PrAll[10:-1], meanP[10:-1]))
+# ### CALCULATE r squared ########################################################
+# ### price for fishers
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanR_P[10:-1])
+# print("r-squared price MLM:", r_value**2)
+# scipy.stats.pearsonr(PrAll[10:-1], meanR_P[10:-1])
+#
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanNoR_P[10:-1])
+# print("r-squared price BEM:", r_value**2)
+# scipy.stats.pearsonr(PrAll[10:-1], meanNoR_P[10:-1])
+#
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanOR_P[10:-1])
+# print("r-squared price BLM:", r_value**2)
+# scipy.stats.pearsonr(PrAll[10:-1], meanOR_P[10:-1])
 #
 # ### catch
-# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanC[10:-1])
-# print ("st error:", std_err)
-# print("r-squared catch:", r_value**2)
-# print ("p-value:", scipy.stats.pearsonr(VolAll[10:-1], meanC[10:-1]))
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanR_C[10:-1])
+# print("r-squared catch MLM:", r_value**2)
+# scipy.stats.pearsonr(VolAll[10:-1], meanR_C[10:-1])
+#
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanNoR_C[10:-1])
+# print("r-squared catch BEM:", r_value**2)
+# scipy.stats.pearsonr(VolAll[10:-1], meanNoR_C[10:-1])
+#
+# slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanOR_C[10:-1])
+# print("r-squared catch BLM:", r_value**2)
+# scipy.stats.pearsonr(VolAll[10:-1], meanOR_C[10:-1])
+
+################################################################################
+###########################  PLOT TEST - direclty plots from model output  #####
+################################################################################
+
+### Load dataset ###############################################################
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+#! load columns
+yr = df1['year'] #
+pe = df1['pe_MXNiat'] #
+pf = df1['pf_MXNiat'] #
+ct = df1['C_t'] #
+ssh = df1['essh_avg'] #
+ml = df1['ML'] #
+ys = df1['y_S'] #
+
+df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
+# Load columns
+VolAll = df2['tons_DM'] ## CATCH DATA
+PrAll = df2['priceMXNia_DM'] ## PRICE DATA
+x = np.arange(0,len(yr))
+
+hfont = {'fontname':'Helvetica'}
+
+fig = plt.figure()
+# add the first axes using subplot populated with predictions
+ax1 = fig.add_subplot(111)
+line1, = ax1.plot(meanP, label = "MLM", color="orange")
+line2, = ax1.plot(PrAll, label = "data", color = "indianred")
+ax1.fill_between(x, highP, lowP, where = highP >= lowP, facecolor='orange', alpha= 0.3, zorder = 0)
+# add the second axes using subplot with ML
+ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+line3, = ax2.plot(ml, color="lightgrey")
+# x-axis
+ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax1.set_xlim(10,tmax-2)
+ax1.set_xlabel("Year",fontsize=20, **hfont)
+ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax2.set_xlim(10,tmax-2)
+ax2.set_xlabel("Year",fontsize=20, **hfont)
+# y-axis
+ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
+# legend
+plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
+# save and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
+plt.show()
+
+
+fig = plt.figure()
+# add the first axes using subplot populated with predictions
+ax1 = fig.add_subplot(111)
+line1, = ax1.plot(meanC, label = "MLM", color="orange")
+line2, = ax1.plot(VolAll, label = "data", color = "indianred")
+ax1.fill_between(x, highC, lowC, where = highC >= lowC, facecolor='orange', alpha= 0.3, zorder = 0)
+# add the second axes using subplot with ML
+ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+line3, = ax2.plot(ml, color="lightgrey")
+# x-axis
+ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax1.set_xlim(10,tmax-2)
+ax1.set_xlabel("Year",fontsize=20, **hfont)
+ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax2.set_xlim(10,tmax-2)
+ax2.set_xlabel("Year",fontsize=20, **hfont)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
+# y-axis
+ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
+# legend
+plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
+# save and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
+plt.show()
+
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(PrAll[10:-1], meanP[10:-1])
+print ("st error:", std_err)
+print("r-squared price:", r_value**2)
+print ("p-value:", scipy.stats.pearsonr(PrAll[10:-1], meanP[10:-1]))
+
+### catch
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(VolAll[10:-1], meanC[10:-1])
+print ("st error:", std_err)
+print("r-squared catch:", r_value**2)
+print ("p-value:", scipy.stats.pearsonr(VolAll[10:-1], meanC[10:-1]))
