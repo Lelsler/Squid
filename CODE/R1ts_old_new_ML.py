@@ -120,7 +120,7 @@ ys = df1['y_S'] #
 tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
+def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
     for t in np.arange(1,tmax):
         if temperature == 0: # isotherm depth
             tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
@@ -338,7 +338,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT12 = np.zeros(tau.shape[0])
 
     for i in np.arange(1,tmax):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]

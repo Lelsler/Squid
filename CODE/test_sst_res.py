@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
-from scipy import stats
+import scipy
 from pandas import *
 
 #################### CHOICES ###################################################
 flag = 1 # 0 = NoR model; 1 = Rmodel, # 2 = in-btw model
-# SST or isotherm: parameters, initial condition for tau, and MC parameter ranges
-temperature = 1 # SSTres = 0, SST = 1
+# SST or SSTres: parameters, initial condition for tau, and MC parameter ranges
+temperature = 1 # SStres/trend = -1, SSTres = 0, SST = 1
 cost = 1 # 0 = old, 1 = new
 initial = 1 # 0 = old, 1 = new
 mantle = 1 # 0 = use mantle, 1 = use tau
@@ -18,6 +18,7 @@ coop = 1 # 0 = old, 1 = new
 wage = 1 # 0 = old, 1 = new
 effort = 0 # 0 = mechanistic, 1= constant, 2 = logistic, 3 = proportional to q
 
+# Standard set-up for model runs: x1110110
 tmax = 27 # model run, years
 
 ### Variables ##################################################################
@@ -39,23 +40,9 @@ RT = np.zeros(tmax) # revenue of traders
 RA = np.zeros(tmax) # revenue all fishery
 G = np.zeros(tmax) # pay gap between fishers and traders
 
-
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
-
-if temperature == 0: ## SST
-    # SST parameters
-    b0 = -16.49 # SST trend
-    b1 = 0.02 # SST trend
-    b2 = 6.779 # SST trend
-    b3 = 0.091 # SST trend
-    l1 = -0.0059 # q, slope
-    l2 = 0.1882 # q, intersect
-    qc = 0.1 # catchability constant
-    a1 = 1/(np.exp(30.823998124274-(b0+b1*(25+1990)))) # migration trigger
-    tau[0] = 30. # for SST
-
-if temperature == 1: #following parameters fitted to SST
+if temperature == -1: #following parameters fitted to SSTres/trend
     # SSTres parameters
     b0 = -40.901 #
     b1 = 0.021 #
@@ -63,10 +50,45 @@ if temperature == 1: #following parameters fitted to SST
     b3 = -0.286 #
     l1 = -0.052 #
     l2 = 0.1196 #
-    a1 = 1/(np.exp(2.29-(b0+b1*(25+1990)))) #
+    qc = 0.1 # catchability constant
+    a1 = 1.0778841508846315 #
+    tau[0] = 0.50 # for SSTres
+    
+if temperature == 0: #following parameters fitted to SSTres
+    # SSTres parameters
+    b0 = -40.901 #
+    b1 = 0.021 #
+    b2 = 0.164 #
+    b3 = -0.286 #
+    l1 = -0.1515 #
+    l2 = 0.05 #
+    qc = 0.1 # catchability constant
+    a1 = 1 #
     tau[0] = 0.50 # for SSTres
 
-# rest parameters
+if temperature == 0: #following parameters fitted to SSTres
+    # SSTres parameters
+    b0 = -40.901 #
+    b1 = 0.021 #
+    b2 = 0.164 #
+    b3 = -0.286 #
+    l1 = -0.052 #
+    l2 = 0.1196 #
+    qc = 0.1 # catchability constant
+    a1 = 1 #
+    tau[0] = 0.50 # for SSTres
+
+if temperature == 1: #following parameters fitted to SST
+    b0 = -16.49 # SST trend
+    b1 = 0.02 # SST trend
+    b2 = 6.779 # SST trend
+    b3 = 0.091 # SST trend
+    l1 = -0.0059 # q, slope
+    l2 = 0.1882 # q, intersect
+    qc = 0.1 # catchability constant
+    a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+1990)))) # migration trigger
+    tau[0] = 30. # for SST
+
 if cost == 0: # old
     c_t = 156076110 # cost of fishing
 if cost == 1: # new
@@ -80,13 +102,11 @@ gamma = 49200 # maximum demand
 beta = 0.0736 # slope of demand-price function
 c_p = 1776.25 # cost of processing
 w_m = 13355164 # min wage per hour all fleet
-qc = 0.1 # q, constant catchability
 
 h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
 B_h = 7.203 # hours per fisher
 B_f = 2 # fisher per panga
-
 
 ### Initial values #############################################################
 if initial == 0: ## OLD
@@ -109,7 +129,6 @@ if initial == 1: ## NEW
     p_e[0] = 52035 # mean p_e comtrade, rounded
     p_f[0] = 8997 # mean p_f datamares, rounded
 
-
 ################################################################################
 ###########################  MODEL FILE  #######################################
 ################################################################################
@@ -128,12 +147,13 @@ ys = df1['y_S'] #
 ### New max time
 tmax = len(y)
 
-
 ### Define Model ###############################################################
-def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
+def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
     for t in np.arange(1,tmax):
-        if temperature == 0: # SSTres
+        if temperature == -1: # SSTres/trend
             tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
+        if temperature == 0: # SSTres
+            tau[t]= b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
         if temperature == 1: # sst trend
             tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
 
@@ -146,6 +166,7 @@ def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta,
                 q[t]= 0.0018 *ML[t] - 0.0318
         if mantle == 1:
             q[t]= l1 *tau[t] +l2
+            print "calc q=", q[t]
 
         if q[t] > 0.1:
             q[t] = 0.1
@@ -157,15 +178,19 @@ def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta,
         # migration of squid
         if mantle == 0: # USE DATA INPUT?
             if ys[t] == 1: # run w/o data
+                if temperature == -1: # SSTres/trend
+                    y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990)))
                 if temperature == 0: # SSTres
-                    y_S[t] = a1 *np.exp(1000*tau[t]-(b0 +b1*(t+1990)))
+                    y_S[t] = a1 *np.exp(tau[t]*1000)
                 if temperature == 1: # SST
                     y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990))) # sst trend
             else:
                 y_S[t]= ys[t] # run with data
         if mantle == 1: # use simulation input
+            if temperature == -1: # SSTres/trend
+                y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990)))
             if temperature == 0: # SSTres
-                y_S[t] = a1 *np.exp(1000*tau[t]-(b0 +b1*(t+1990)))
+                y_S[t] = a1 *np.exp(tau[t]*1000)
             if temperature == 1: # SST
                 y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990))) # sst trend
 
@@ -254,7 +279,7 @@ def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta,
         if flag == 0: # BEM
             # price for fishers
             p_f[t] = p_e[t] -c_p
-        if flag == 2: # BLM
+        if flag == 2: # BEM with tau
             p_f[t] = p_e[t] -c_p    # price for fishers
         if flag == 1: #MLM
             if wage == 0: # minimum wage old
@@ -280,17 +305,13 @@ def model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta,
         # print t, tau[t], ML[t], q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t]
     return tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G
 
-
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
 ################################################################################
 
 ##### Initiate arrays ##########################################################
 sim = np.arange(0,100) # number of simulations
-if temperature == 0: # ISO
-    x = np.zeros(11) # set array to save parameters
-if temperature == 1: # SST
-    x = np.zeros(12) # set array to save parameters
+x = np.zeros(12) # set array to save parameters
 par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of each simulation
 cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
 pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices in each time period of each simulation
@@ -308,6 +329,8 @@ rvf = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save income fishers
 rvt = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save income traders
 rva = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save revenue fishery
 
+
+##### Run the model ############################################################
 for j in range(0,sim.shape[0]): # draw randomly a float in the range of values for each parameter
     qc = np.random.uniform(0.01, 0.5)
     d = np.random.uniform(0.5, 1.5)
@@ -318,19 +341,19 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     c_t = np.random.uniform(50907027, 212300758)
     w_m = np.random.uniform(11956952, 28108539)
 
-    if temperature == 0: # ISO
-        b1 = np.random.uniform(38.750, 42.1) # isotherm
-        b2 = np.random.uniform(-3.987, -6.9) # isotherm
-        b3 = np.random.uniform(11.478, 16.4) # isotherm
-        x = [b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
+    # if temperature == 0: # SSTres
+        # b0 = np.random.uniform(-40, -41) #SSTres
+        # b1 = np.random.uniform(0.019, 0.023) #SSTres
+        # b2 = np.random.uniform(0.1, 0.2) #SSTres
+        # b3 = np.random.uniform(-0.2, -0.3) #SSTres
 
     if temperature == 1: # SST
         b0 = np.random.uniform(-5.15, -27.83) #SST
         b1 = np.random.uniform(0.026, 0.014) #SST
         b2 = np.random.uniform(6.859, 6.699) #SST
         b3 = np.random.uniform(0.171, 0.011) #SST
-        x = [b0, b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
 
+    x = [b0, b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
     par[j] = x
 
     OUT1 = np.zeros(tau.shape[0])
@@ -347,7 +370,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT12 = np.zeros(tau.shape[0])
 
     for i in np.arange(1,tmax):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]
@@ -379,7 +402,10 @@ meanC = np.zeros(y.shape[0])
 lowP = np.zeros(y.shape[0])
 highP = np.zeros(y.shape[0])
 meanP = np.zeros(y.shape[0])
-
+meanM = np.zeros(y.shape[0])
+lowT = np.zeros(y.shape[0])
+highT = np.zeros(y.shape[0])
+meanT = np.zeros(y.shape[0])
 
 for h in range(0,y.shape[0]): # calculate the 95% confidence interval
     z = cat[:,h]
@@ -390,10 +416,15 @@ for h in range(0,y.shape[0]): # calculate the 95% confidence interval
     lowP[h] = np.nanmean(zeta) - ((1.96 * np.nanstd(zeta))/np.sqrt(np.count_nonzero(~np.isnan(zeta))))
     highP[h] = np.nanmean(zeta) + ((1.96 * np.nanstd(zeta))/np.sqrt(np.count_nonzero(~np.isnan(zeta))))
     meanP[h] = np.nanmean(zeta)
-
+    migrated = mig[:,h]
+    meanM[h] = np.nanmean(migrated)
+    kita = tem[:,h]
+    lowT[h] = np.nanmean(kita) - ((1.96 * np.nanstd(kita))/np.sqrt(np.count_nonzero(~np.isnan(kita))))
+    highT[h] = np.nanmean(kita) + ((1.96 * np.nanstd(kita))/np.sqrt(np.count_nonzero(~np.isnan(kita))))
+    meanT[h] = np.nanmean(kita)
 
 ################################################################################
-###########################  PLOT TEST - directly plots from model output  #####
+###########################  PLOT TEST - direclty plots from model output  #####
 ################################################################################
 
 ### Load dataset ###############################################################
@@ -413,26 +444,26 @@ fig = plt.figure()
 # add the first axes using subplot populated with predictions
 ax1 = fig.add_subplot(111)
 line1, = ax1.plot(all, label = "data total catches", color="orange")
-line2, = ax1.plot(pac, label = "data catches pacific", color = "indianred")
-line3, = ax1.plot(OUT2, label = "simulation catches", color = "sage")
+line2, = ax1.plot(meanC, label = "simulation catches", color = "indianred")
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-line4, = ax2.plot(OUT4, color="lightgrey")
+line3, = ax2.plot(meanM, color="lightgrey")
+line4, = ax2.plot(pac/all, color="lightblue")
 # x-axis
 ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
 # ax1.set_xlim(10,tmax-2)
 ax1.set_xlabel("Year",fontsize=20, **hfont)
-ax2.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
+ax2.set_xticklabels(np.arange(1990,2016,5), rotation=45, fontsize= 12)
 # ax2.set_xlim(10,tmax-2)
 ax2.set_xlabel("Year",fontsize=20, **hfont)
 # y-axis
-ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+ax1.set_ylabel("Catches $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax2.set_ylabel("Migrated squid $\%$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 # legend
-plt.legend([line1, line2, line3], ["data total catches", "data catches pacific", "simulation catches"], fontsize= 11)
+plt.legend([line1, line2, line3, line4], ["data total catches", "simulation catches", "simulation migrated", "data migrated"], fontsize= 11)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/test.png',dpi=500)
 plt.show()
