@@ -8,23 +8,15 @@ import scipy
 from pandas import *
 
 #################### CHOICES ###################################################
-flag = 1 # 0 = BEM; 1 = MLM, # 2 = BLM
-# SST or isotherm: parameters, initial condition for tau, and MC parameter ranges
-temperature = 1 # iso = 0, SST = 1
-cost = 1 # 0 = old, 1 = new
-initial = 1 # 0 = old, 1 = new
-mantle = 1 # 0 = use mantle, 1 = use tau
-coop = 1 # 0 = old, 1 = new
-wage = 1 # 0 = old, 1 = new
-effort = 0 # 0 = mechanistic, 1= constant, 2 = logistic, 3 = proportional to q
+flag = 2 # 0 = BEM; 1 = MLM, # 2 = BLM
 
 # Standard set-up for model runs: x1110110
 tmax = 27 # model run, years
 
 ### Variables ##################################################################
 tau = np.zeros(tmax) # temperature
-q = np.zeros(tmax) # catchability squid population
 ML = np.zeros(tmax) # mantle length
+q = np.zeros(tmax) # catchability squid population
 y_S = np.zeros(tmax) # distance of squid migration from initial fishing grounds
 R_tt = np.zeros(tmax) # trader cooperation
 S = np.zeros(tmax) # size of the squid population
@@ -42,30 +34,16 @@ G = np.zeros(tmax) # pay gap between fishers and traders
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
-if temperature == 0: ## isotherm depth
-    b1 = 41.750 # isotherm depth
-    b2 = -5.696 # isotherm depth
-    b3 = 16.397 # isotherm depth
-    l1 = -0.0028 # q, slope # SST l1 = -0.0059 # q, slope
-    l2 = 0.1667 # q, intersect # SST l2 = 0.1882 # q, intersect
-    qc = 0.1 # q, constant catchability
-    a1 = 1/3.4E7 # proportion of migrating squid, where 3.4E7 max(e^(tau-b1))
-    tau[0] = 42. # isotherm depth
-if temperature == 1: #following parameters fitted to SST
-    b0 = -16.49 # SST trend
-    b1 = 0.02 # SST trend
-    b2 = 6.779 # SST trend
-    b3 = 0.091 # SST trend
-    l1 = -0.0059 # q, slope
-    l2 = 0.1882 # q, intersect
-    qc = 0.1 # catchability constant
-    a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+2015)))) # migration trigger
-    tau[0] = 30. # for SST
-if cost == 0: # old
-    c_t = 156076110 # cost of fishing
-if cost == 1: # new
-    c_t = 107291548 # cost of fishing
-
+b0 = -16.49 # SST trend
+b1 = 0.02 # SST trend
+b2 = 6.779 # SST trend
+b3 = 0.091 # SST trend
+l1 = -0.0059 # q, slope
+l2 = 0.1882 # q, intersect
+qc = 0.1 # catchability constant
+a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+2015)))) # migration trigger
+tau[0] = 30. # for SST
+c_t = 107291548 # cost of fishing
 f = 0 # intercept of trader cooperation
 d = 1 # slope of trader cooperation
 K = 1208770 # carrying capacity
@@ -73,33 +51,19 @@ g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
 beta = 0.0736 # slope of demand-price function
 c_p = 1776.25 # cost of processing
-w_m = 13355164 # min wage per hour all fleet
 
 h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
-B_h = 7.203 # hours per fisher
-B_f = 2 # fisher per panga
 
 ### Initial values #############################################################
-if initial == 0: ## OLD
-    q[0] = 0.01 # squid catchability
-    y_S[0] = 0.5 # proportion of migrated squid
-    R_tt[0] = 0.5 # trader cooperation
-    S[0] = 1208770 # size of the squid population
-    E[0] = 1. # fishing effort
-    C[0] = 120877 # squid catch
-    p_e[0] = 99366 # max p_e comtrade
-    p_f[0] = 15438 # max p_f datamares
-
-if initial == 1: ## NEW
-    q[0] = 0.05 # squid catchability
-    y_S[0] = 0.5 # proportion of migrated squid
-    R_tt[0] = 0.5 # trader cooperation
-    S[0] = 610075 # size of the squid population, mean
-    E[0] = 0.5 # fishing effort
-    C[0] = 60438 # squid catch mean
-    p_e[0] = 52035 # mean p_e comtrade, rounded
-    p_f[0] = 8997 # mean p_f datamares, rounded
+q[0] = 0.05 # squid catchability
+y_S[0] = 0.5 # proportion of migrated squid
+R_tt[0] = 0.5 # trader cooperation
+S[0] = 610075 # size of the squid population, mean
+E[0] = 0.5 # fishing effort
+C[0] = 60438 # squid catch mean
+p_e[0] = 52035 # mean p_e comtrade, rounded
+p_f[0] = 8997 # mean p_f datamares, rounded
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -120,22 +84,16 @@ ys = df1['y_S'] #
 tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
+def model(b0, b1, b2, b3, l1, l2, qc, a1, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, flag):
     for t in np.arange(1,tmax):
-        if temperature == 0: # isotherm depth
-            tau[t]= b1 +b2 *np.cos(t) + b3 *np.sin(t)
-        if temperature == 1: # sst trend
-            tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
+        tau[t]= b0 +b1 *(t+2015) +b2 *np.cos(t+2015) + b3 *np.sin(t+2015)
 
         # mantle length and catchability
-        if mantle == 0:
-            if ml[t] == 1:
-                q[t]= l1 *tau[t] +l2
-            else:
-                ML[t]= ml[t]
-                q[t]= 0.0018 *ML[t] - 0.0318
-        if mantle == 1:
+        if ml[t] == 1:
             q[t]= l1 *tau[t] +l2
+        else:
+            ML[t]= ml[t]
+            q[t]= 0.0018 *ML[t] - 0.0318
 
         if q[t] > 0.1:
             q[t] = 0.1
@@ -145,19 +103,10 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
             print "q low"
 
         # migration of squid
-        if mantle == 0: # USE DATA INPUT?
-            if ys[t] == 1: # run w/o data
-                if temperature == 0: # ISO
-                    y_S[t] = a1 *np.exp(tau[t]-b1)
-                if temperature == 1: # SST
-                    y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
-            else:
-                y_S[t]= ys[t] # run with data
-        if mantle == 1: # use simulation input
-            if temperature == 0: # ISO
-                y_S[t] = a1 *np.exp(tau[t]-b1)
-            if temperature == 1: # SST
-                y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
+        if ys[t] == 1: # run w/o data
+            y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+2015))) # sst trend
+        else:
+            y_S[t]= ys[t] # run with data
 
         if y_S[t] > 1:
             y_S[t] = 1
@@ -167,10 +116,7 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
             print "yS low"
 
         # trader cooperation
-        if coop == 0: # LINEAR
-            R_tt[t] = (1-y_S[t])
-        if coop == 1: # EXPONENTIAL
-            R_tt[t]= f+ np.exp(-d* y_S[t])
+        R_tt[t]= f+ np.exp(-d* y_S[t])
 
         #### switch between models ####
         if flag == 0: # squid population BEM
@@ -180,43 +126,14 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
 
         #### switch between models ####
         if flag == 0: # effort BEM
-            print "BEM"
-            if effort == 0: # mechanistic
-                Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
-                E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
-            if effort == 1: # constant
-                E[t] = 1.
-            if effort == 2: # logistic
-                RFn[t]= (RF[t-1])/(17622692)
-                if RFn[t]> 1:
-                    RFn[t] = 1
-                    print "RFn high"
-                elif RFn[t] < 0:
-                    RFn[t] = 0
-                    print "RFn low"
-
-                E[t] = 0.5 +1/(1+ np.exp(-RFn[t])*100)
-            if effort == 3: # proportional to catchability
-                E[t] = 10 *q[t]
+            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+            # fishing effort scaled
+            E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
 
         if flag >= 1: # effort MLM
-            if effort == 0: # mechanistic
-                print "mechanistic"
-                Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
-                # fishing effort scaled
-                E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
-                E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
-            if effort == 1: # constant
-                print "constant"
-                E[t] = 1.
-            if effort == 2: # logistic
-                print "logistic"
-                RFn[t]= (RF[t-1])/(17622692)
-                # E[t] = RFn[t]
-                E[t] = 0.5 +1/(1+ np.exp(-RFn[t])*100)
-            if effort == 3: # proportional to catchability
-                print "proportional"
-                E[t] = 10 *q[t]
+            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+            # fishing effort scaled
+            E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
 
         if E[t] > 1:
             E[t] = 1
@@ -246,11 +163,8 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
             p_f[t] = p_e[t] -c_p
         if flag == 2: # BLM
             p_f[t] = p_e[t] -c_p    # price for fishers
-        if flag == 1: #MLM
-            if wage == 0: # minimum wage old
-                p_min[t]= (E[t] *w_m)/C[t]
-            if wage == 1: # minimum wage new
-                p_min[t]= (c_t *E[t])/C[t] # ->must be MXN/ton to fit into p_f calc
+        if flag == 1: # MLM
+            p_min[t]= (c_t *E[t])/C[t] # ->must be MXN/ton to fit into p_f calc
             # price for fishers
             p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
 
@@ -267,8 +181,7 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
         # pay gap
         G[t] = RF[t]/RT[t]
 
-        # print t, tau[t], ML[t], q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t]
-    return tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G
+    return tau, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
@@ -276,10 +189,7 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
 
 ##### Initiate arrays ##########################################################
 sim = np.arange(0,100) # number of simulations
-if temperature == 0: # ISO
-    x = np.zeros(11) # set array to save parameters
-if temperature == 1: # SST
-    x = np.zeros(12) # set array to save parameters
+x = np.zeros(12) # set array to save parameters
 par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of each simulation
 cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
 pri = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save prices in each time period of each simulation
@@ -307,20 +217,12 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     beta = np.random.uniform(0.01, 0.1)
     c_p = np.random.uniform(1000, 2148)
     c_t = np.random.uniform(50907027, 212300758)
-    w_m = np.random.uniform(11956952, 28108539)
 
-    if temperature == 0: # ISO
-        b1 = np.random.uniform(38.750, 42.1) # isotherm
-        b2 = np.random.uniform(-3.987, -6.9) # isotherm
-        b3 = np.random.uniform(11.478, 16.4) # isotherm
-        x = [b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
-
-    if temperature == 1: # SST
-        b0 = np.random.uniform(-5.15, -27.83) #SST
-        b1 = np.random.uniform(0.026, 0.014) #SST
-        b2 = np.random.uniform(6.859, 6.699) #SST
-        b3 = np.random.uniform(0.171, 0.011) #SST
-        x = [b0, b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
+    b0 = np.random.uniform(-5.15, -27.83) #SST
+    b1 = np.random.uniform(0.026, 0.014) #SST
+    b2 = np.random.uniform(6.859, 6.699) #SST
+    b3 = np.random.uniform(0.171, 0.011) #SST
+    x = [b0, b1, b2, b3, qc, d, g, gamma, beta, c_p, c_t, w_m]
 
     par[j] = x
 
@@ -338,7 +240,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT12 = np.zeros(tau.shape[0])
 
     for i in np.arange(1,tmax):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
+            tau, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1, b2, b3, l1, l2, qc, a1, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]
