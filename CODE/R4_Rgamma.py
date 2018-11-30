@@ -191,8 +191,8 @@ for i in np.arange(0,gamma.shape[0]):
 
 ##### Plot 1 ###################################################################
 ## define dimensions
-y = gamma #  y axis
-x = Rtt #  x axis
+y = Rtt #  y axis
+x = gamma #  x axis
 z = gap1 #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -203,11 +203,11 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Demand $\gamma$', labelpad=4, fontsize = 22)
-plt.ylim(2E4,12E4)
+ax.set_xlabel('Demand $\gamma$', labelpad=4, fontsize = 22)
+plt.xlim(2E4,12E4)
 ## set x-axis
-ax.set_xlabel('Trader cooperation $R$', fontsize = 22)
-plt.xlim(0,1)
+ax.set_ylabel('Trader cooperation $R$', fontsize = 22)
+plt.ylim(0,1)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label((r'mean price gap $\frac{P_f}{P_m}$'), rotation=270, labelpad=40, fontsize = 22)
@@ -218,8 +218,8 @@ plt.show()
 
 ##### Plot 2 ###################################################################
 ## define dimensions
-y = gamma #  y axis
-x = Rtt #  x axis
+y = Rtt #  y axis
+x = gamma #  x axis
 z = gap2 #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -230,11 +230,11 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Demand $\gamma$', labelpad=4, fontsize = 22)
-plt.ylim(2E4,12E4)
+ax.set_xlabel('Demand $\gamma$', labelpad=4, fontsize = 22)
+plt.xlim(2E4,12E4)
 ## set x-axis
-ax.set_xlabel('Trader cooperation $R$', fontsize = 22)
-plt.xlim(0,1)
+ax.set_ylabel('Trader cooperation $R$', fontsize = 22)
+plt.ylim(0,1)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label((r'std price gap $\frac{P_f}{P_m}$'), rotation=270, labelpad=40, fontsize = 22)
@@ -301,3 +301,62 @@ plt.show()
 # # all but bottom plot.
 # f.subplots_adjust(hspace=0.2)
 # plt.show()
+
+################################################################################
+###########################  SI PLOT  ##########################################
+################################################################################
+
+
+##### Plot 1 ###################################################################
+## define dimensions
+y = Rtt #  y axis
+x = gamma #  x axis
+z = cat #  output data
+## sub plot
+fig1 = plt.figure(figsize=[9,6])
+gs = gridspec.GridSpec(1,1,bottom=0.1,left=0.1,right=0.9)
+ax = fig1.add_subplot(gs[0,0])
+pcObject = ax.pcolormesh(x,y,z)
+plt.pcolormesh(x, y, z, cmap="Spectral")
+# both axis
+plt.tick_params(axis=1, which='major', labelsize=12)
+## set y-axis
+ax.set_xlabel('Demand $\gamma$', labelpad=4, fontsize = 22)
+plt.xlim(2E4,12E4)
+## set x-axis
+ax.set_ylabel('Trader cooperation $R$', fontsize = 22)
+plt.ylim(0,1)
+## colorbar
+cb = plt.colorbar()
+cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22)
+# plt.clim([0,1])
+## save and show
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_Rgamma_C.png",dpi=500)
+plt.show()
+
+##### Plot 2 ###################################################################
+## define dimensions
+y = Rtt #  y axis
+x = gamma #  x axis
+z = rvf #  output data
+## sub plot
+fig1 = plt.figure(figsize=[9,6])
+gs = gridspec.GridSpec(1,1,bottom=0.1,left=0.1,right=0.9)
+ax = fig1.add_subplot(gs[0,0])
+pcObject = ax.pcolormesh(x,y,z)
+plt.pcolormesh(x, y, z, cmap="Spectral")
+# both axis
+plt.tick_params(axis=1, which='major', labelsize=12)
+## set y-axis
+ax.set_xlabel('Demand $\gamma$', labelpad=4, fontsize = 22)
+plt.xlim(2E4,12E4)
+## set x-axis
+ax.set_ylabel('Trader cooperation $R$', fontsize = 22)
+plt.ylim(0,1)
+## colorbar
+cb = plt.colorbar()
+cb.set_label('Fisher income $MXN$', rotation=270, labelpad=40, fontsize = 22)
+# plt.clim([0,1])
+## save and show
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_Rgamma_RF.png",dpi=500)
+plt.show()
