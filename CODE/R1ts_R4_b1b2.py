@@ -159,9 +159,6 @@ def model(b0, b1, b2, b3, l1, l2, a1, f, d, g, K, h1, h2, gamma, beta, c_p, c_t,
 #############################  RUN MODEL FILE  #################################
 ################################################################################
 
-#### Model w/o relationships ###################################################
-flag = 1 # must be 1!!! 1 = Rmodel
-
 ##### Run the model ############################################################
 b1 = np.arange(0.013,0.027,0.0001)
 b2 = np.arange(5.25,8.75,0.025)
@@ -209,7 +206,7 @@ for i in np.arange(0,b1.shape[0]):
 ## define dimensions
 y = b1 #  y axis
 x = b2 #  x axis
-z = gap1 #  output data
+z = mar #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=0.1,left=0.1,right=0.9)
@@ -232,11 +229,14 @@ cb.set_label((r'mean price gap $\frac{P_f}{P_m}$'), rotation=270, labelpad=40, f
 # fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b2_mean.png",dpi=500)
 plt.show()
 
-##### Plot 2 ###################################################################
+################################################################################
+###################################  SI PLOTS ##################################
+################################################################################
+
 ## define dimensions
 y = b1 #  y axis
 x = b2 #  x axis
-z = gap2 #  output data
+z = rff #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=0.1,left=0.1,right=0.9)
@@ -253,10 +253,37 @@ ax.set_xlabel('Amplitude $b2$', fontsize = 22)
 plt.xlim(5.25,8.5)
 ## colorbar
 cb = plt.colorbar()
-cb.set_label((r'std price gap $\frac{P_f}{P_m}$'), rotation=270, labelpad=40, fontsize = 22)
+cb.set_label('Revenue fishers $MXN$', rotation=270, labelpad=40, fontsize = 22)
 # plt.clim([0,1])
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b2_std.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b2_SI_RF.png",dpi=500)
+plt.show()
+
+
+## define dimensions
+y = b1 #  y axis
+x = b2 #  x axis
+z = cat #  output data
+## sub plot
+fig1 = plt.figure(figsize=[9,6])
+gs = gridspec.GridSpec(1,1,bottom=0.1,left=0.1,right=0.9)
+ax = fig1.add_subplot(gs[0,0])
+pcObject = ax.pcolormesh(x,y,z)
+plt.pcolormesh(x, y, z, cmap="Spectral")
+# both axis
+plt.tick_params(axis=1, which='major', labelsize=12)
+## set y-axis
+ax.set_ylabel('Trend $b1$', fontsize = 22)
+plt.ylim(0.013,0.026)
+## set x-axis
+ax.set_xlabel('Amplitude $b2$', fontsize = 22)
+plt.xlim(5.25,8.5)
+## colorbar
+cb = plt.colorbar()
+cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22)
+# plt.clim([0,1])
+## save and show
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b2_SI_C.png",dpi=500)
 plt.show()
 
 ################################################################################
@@ -274,7 +301,7 @@ plt.show()
 # OUT9 = np.zeros(tau.shape[0])
 #
 # for i in np.arange(0,1):
-#         tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA = model(b0, b1, b2, b3, l1, l2, a1, f, d, g, K, h1, h2, gamma, beta, c_p, c_t, flag)
+#         tau, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA = model(b0, b1, b2, b3, l1, l2, a1, f, d, g, K, h1, h2, gamma, beta, c_p, c_t, flag)
 #         OUT1[i]= p_f[i]
 #         OUT2[i]= C[i]
 #         OUT3[i]= tau[i]

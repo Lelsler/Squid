@@ -10,7 +10,7 @@ from pandas import *
 #################### CHOICES ###################################################
 flag = 1 # 0 = NoR model; 1 = Rmodel, # 2 = in-btw model
 # SST or SSTres: parameters, initial condition for tau, and MC parameter ranges
-temperature = 1 # SStres/trend = -1, SSTres = 0, SST = 1
+temperature = 3 # SSTres = 0, SST = 1, SStres/trend = 2, SSTanom = 3
 cost = 1 # 0 = old, 1 = new
 initial = 1 # 0 = old, 1 = new
 mantle = 1 # 0 = use mantle, 1 = use tau
@@ -42,18 +42,6 @@ G = np.zeros(tmax) # pay gap between fishers and traders
 
 ### Parameters #################################################################
 # scales: tons, years, MXNia, hours, trips
-if temperature == -1: #following parameters fitted to SSTres/trend
-    # SSTres parameters
-    b0 = -40.901 #
-    b1 = 0.021 #
-    b2 = 0.164 #
-    b3 = -0.286 #
-    l1 = -0.052 #
-    l2 = 0.1196 #
-    qc = 0.1 # catchability constant
-    a1 = 1.0778841508846315 #
-    tau[0] = 0.50 # for SSTres
-    
 if temperature == 0: #following parameters fitted to SSTres
     # SSTres parameters
     b0 = -40.901 #
@@ -62,18 +50,6 @@ if temperature == 0: #following parameters fitted to SSTres
     b3 = -0.286 #
     l1 = -0.1515 #
     l2 = 0.05 #
-    qc = 0.1 # catchability constant
-    a1 = 1 #
-    tau[0] = 0.50 # for SSTres
-
-if temperature == 0: #following parameters fitted to SSTres
-    # SSTres parameters
-    b0 = -40.901 #
-    b1 = 0.021 #
-    b2 = 0.164 #
-    b3 = -0.286 #
-    l1 = -0.052 #
-    l2 = 0.1196 #
     qc = 0.1 # catchability constant
     a1 = 1 #
     tau[0] = 0.50 # for SSTres
@@ -88,6 +64,31 @@ if temperature == 1: #following parameters fitted to SST
     qc = 0.1 # catchability constant
     a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+1990)))) # migration trigger
     tau[0] = 30. # for SST
+
+if temperature == 2: #following parameters fitted to SSTres/trend
+    # SSTres parameters
+    b0 = -40.901 #
+    b1 = 0.021 #
+    b2 = 0.164 #
+    b3 = -0.286 #
+    l1 = -0.052 #
+    l2 = 0.1196 #
+    qc = 0.1 # catchability constant
+    a1 = 1.0778841508846315 #
+    tau[0] = 0.50 # for SSTres
+
+if temperature == 3: #following parameters fitted to SSTanom
+    # SSTres parameters
+    b0 = -40.901 #
+    b1 = 0.020 #
+    b2 = 0.165387 #
+    b3 = -0.287384 #
+    l1 = -0.0912  #
+    l2 = 0.0231 #
+    qc = 0.1 # catchability constant
+    a1 = 1 #
+    tau[0] = -0.80 # for SSTres
+
 
 if cost == 0: # old
     c_t = 156076110 # cost of fishing
@@ -150,11 +151,13 @@ tmax = len(y)
 ### Define Model ###############################################################
 def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
     for t in np.arange(1,tmax):
-        if temperature == -1: # SSTres/trend
-            tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
         if temperature == 0: # SSTres
             tau[t]= b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
         if temperature == 1: # sst trend
+            tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
+        if temperature == 2: # SSTres/trend
+            tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
+        if temperature == 3: # SSTres/trend
             tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
 
         # mantle length and catchability
@@ -178,21 +181,25 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
         # migration of squid
         if mantle == 0: # USE DATA INPUT?
             if ys[t] == 1: # run w/o data
-                if temperature == -1: # SSTres/trend
-                    y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990)))
                 if temperature == 0: # SSTres
                     y_S[t] = a1 *np.exp(tau[t]*1000)
                 if temperature == 1: # SST
                     y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990))) # sst trend
+                if temperature == 2: # SSTres/trend
+                    y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990)))
+                if temperature == 3: # SSTres/trend
+                    y_S[t] = 5E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
             else:
                 y_S[t]= ys[t] # run with data
         if mantle == 1: # use simulation input
-            if temperature == -1: # SSTres/trend
-                y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990)))
-            if temperature == 0: # SSTres
-                y_S[t] = a1 *np.exp(tau[t]*1000)
-            if temperature == 1: # SST
-                y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990))) # sst trend
+                if temperature == 0: # SSTres
+                    y_S[t] = a1 *np.exp(tau[t]*1000)
+                if temperature == 1: # SST
+                    y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990))) # sst trend
+                if temperature == 2: # SSTres/trend
+                    y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990)))
+                if temperature == 3: # SSTres/trend
+                    y_S[t] = 5E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
 
         if y_S[t] > 1:
             y_S[t] = 1
@@ -447,7 +454,7 @@ line1, = ax1.plot(all, label = "data total catches", color="orange")
 line2, = ax1.plot(meanC, label = "simulation catches", color = "indianred")
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-line3, = ax2.plot(meanM, color="lightgrey")
+line3, = ax2.plot(meanM, color="grey")
 line4, = ax2.plot(pac/all, color="lightblue")
 # x-axis
 ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
@@ -458,7 +465,7 @@ ax2.set_xticklabels(np.arange(1990,2016,5), rotation=45, fontsize= 12)
 ax2.set_xlabel("Year",fontsize=20, **hfont)
 # y-axis
 ax1.set_ylabel("Catches $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax2.set_ylabel("Migrated squid $\%$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("Migrated squid $\%$", rotation=270, color='grey', labelpad=22, fontsize=20, **hfont)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
