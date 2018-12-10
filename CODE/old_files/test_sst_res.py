@@ -50,7 +50,6 @@ if temperature == 0: #following parameters fitted to SSTres
     b3 = -0.286 #
     l1 = -0.1515 #
     l2 = 0.05 #
-    qc = 0.1 # catchability constant
     a1 = 1 #
     tau[0] = 0.50 # for SSTres
 
@@ -61,7 +60,6 @@ if temperature == 1: #following parameters fitted to SST
     b3 = 0.091 # SST trend
     l1 = -0.0059 # q, slope
     l2 = 0.1882 # q, intersect
-    qc = 0.1 # catchability constant
     a1 = 1/(np.exp(30.823998124274-(b0+b1*(30+1990)))) # migration trigger
     tau[0] = 30. # for SST
 
@@ -73,7 +71,6 @@ if temperature == 2: #following parameters fitted to SSTres/trend
     b3 = -0.286 #
     l1 = -0.052 #
     l2 = 0.1196 #
-    qc = 0.1 # catchability constant
     a1 = 1.0778841508846315 #
     tau[0] = 0.50 # for SSTres
 
@@ -81,20 +78,19 @@ if temperature == 3: #following parameters fitted to SSTanom
     # SSTres parameters
     b0 = -40.901 #
     b1 = 0.020 #
-    b2 = 0.165387 #
-    b3 = -0.287384 #
+    b2 = 0.165 #
+    b3 = -0.287 #
     l1 = -0.0912  #
     l2 = 0.0231 #
-    qc = 0.1 # catchability constant
     a1 = 1 #
     tau[0] = -0.80 # for SSTres
-
 
 if cost == 0: # old
     c_t = 156076110 # cost of fishing
 if cost == 1: # new
     c_t = 107291548 # cost of fishing
 
+qc = 0.1 # catchability constant
 f = 0 # intercept of trader cooperation
 d = 1 # slope of trader cooperation
 K = 1208770 # carrying capacity
@@ -108,6 +104,34 @@ h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
 B_h = 7.203 # hours per fisher
 B_f = 2 # fisher per panga
+
+### Normalizes q values ########################################################
+
+## calculates q as normalized value of tau over the time span provided
+qMax = 0 # is reverse bc is reverse to tau values
+qMin = 0.2
+valueScaled = np.zeros(tmax)
+
+def translate(tau, qMin, qMax):
+    tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
+
+    # Figure out how 'wide' each range is
+    tauSpan = max(tau) - min(tau)
+    qSpan = qMax - qMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled[t] = float(tau[t] - min(tau)) / float(tauSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    q = qMin + (valueScaled * qSpan)
+
+    return q, tauSpan, qSpan
+
+for t in np.arange(0,tmax):
+     q, tauSpan, qSpan = translate(tau, qMin, qMax)
+
+tauMin = min(tau)
+
 
 ### Initial values #############################################################
 if initial == 0: ## OLD
@@ -149,7 +173,7 @@ ys = df1['y_S'] #
 tmax = len(y)
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
+def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag):
     for t in np.arange(1,tmax):
         if temperature == 0: # SSTres
             tau[t]= b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
@@ -168,11 +192,15 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
                 ML[t]= ml[t]
                 q[t]= 0.0018 *ML[t] - 0.0318
         if mantle == 1:
-            q[t]= l1 *tau[t] +l2
+            if temperature <= 2:
+                q[t]= l1 *tau[t] +l2
+            if temperature == 3:
+                valueScaled[t] = float(tau[t] - tauMin) / float(tauSpan)
+                q[t] = qMin + (valueScaled[t] * qSpan)
             print "calc q=", q[t]
 
-        if q[t] > 0.1:
-            q[t] = 0.1
+        if q[t] > qc:
+            q[t] = qc
             print "q high"
         elif q[t] < 0:
             q[t] = 0
@@ -199,7 +227,8 @@ def model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, b
                 if temperature == 2: # SSTres/trend
                     y_S[t] = a1 *np.exp(tau[t]-(b0 +b1*(t+1990)))
                 if temperature == 3: # SSTres/trend
-                    y_S[t] = 5E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+                    # y_S[t] = 5E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+                    y_S[t] = 5E-15 *np.exp(100*(0.165387*np.cos(t)-0.287384*np.sin(t))) # what Greg provided
 
         if y_S[t] > 1:
             y_S[t] = 1
@@ -377,7 +406,7 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
     OUT12 = np.zeros(tau.shape[0])
 
     for i in np.arange(1,tmax):
-            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1, b2, b3, l1, l2, qc, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
+            tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, a1, B_h, B_f, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, w_m, flag)
             OUT1[i]= p_f[i]
             OUT2[i]= C[i]
             OUT3[i]= tau[i]
