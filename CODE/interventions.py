@@ -11,14 +11,15 @@ from pandas import *
 flag = 1 # 0 = BEM; 1 = MLM, # 2 = BLM
 # SST or SSTres: parameters, initial condition for tau, and MC parameter ranges
 mantle = 1 ### default 1 for this model # 0 = use mantle, 1 = use tau
-intervention = 3 # 0 = competition intervention; 1 = demand BEM; 2 = demand BLM; 3= demand MLM
-competition = 0 # 0 = no intervention; 1 = intervention competition
-demand = 1 # 0 = no intervention; 1 = intervention demand
+intervention = 0 # 0 = competition intervention; 1 = demand BEM; 2 = demand BLM; 3= demand MLM
+competition = 1 # 0 = no intervention; 1 = intervention competition
+demand = 0 # 0 = no intervention; 1 = intervention demand
+migrate = 1 # 0 = use discrete function, 1 = use continuous function, 2 = use data
 
-# for competition int: 11010
-# for demand BEM: 01101
-# for demand BLM: 21201
-# for demand MLM: 11301
+# for competition int: 110101
+# for demand BEM: 011011
+# for demand BLM: 212011
+# for demand MLM: 113011
 
 ### Parameters #################################################################
 tmax = 35 # model run, years
@@ -79,6 +80,27 @@ timeInt = 15 # year to start intervention
 ### Variables
 F = np.zeros(tmax) # intercept of traders cooperation
 
+#### Load dataset  #############################################################
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+#! load columns
+y = df1['year'] #
+pe = df1['pe_MXNiat'] #
+pf = df1['pf_MXNiat'] #
+ct = df1['C_t'] #
+ssh = df1['essh_avg'] #
+ml = df1['ML'] #
+ys = df1['y_S'] #
+
+### continuous migration trigger ###############################################
+## calculates migration from a continuous sin/cos function
+xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers
+#y = np.sin(x)/x # computing the values of sin(x)/x
+yo = 4.1E-15 *np.exp(100*(b2*np.cos(xo)-b3*np.sin(xo)))
+plt.plot(xo,yo) # sin(x)/x
+plt.show()
+
+yo = np.array([0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0, 0.9773642085169757,0,0,0,0,0,0.9773642085169757,0])
+
 ### Normalizes q values ########################################################
 ## calculates q as normalized value of tau over the time span provided
 qMax = 0 # is reverse bc is reverse to tau values
@@ -135,13 +157,17 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, 
             print "q low"
 
         # migration of squid
-        if mantle == 0: # USE DATA INPUT?
-            if ys[t] == 1: # run w/o data
-                y_S[t] = 4E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+        if migrate == 0: # use discrete function
+            y_S[t] = 4.1E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+
+        if migrate == 1: # use continuous function
+                y_S[t]= yo[t] # run with continuous function
+
+        if migrate == 2: # use data input: data is not available for the entire timeseries, the data gaps are filled with continuous function simulations
+            if ys[t] == 1:
+                y_S[t]= yo[t]
             else:
-                y_S[t]= ys[t] # run with data
-        if mantle == 1: # use simulation input
-            y_S[t] = 4E-15 *np.exp(100*(0.165387*np.cos(t)-0.287384*np.sin(t))) # what Greg provided
+                y_S[t]= ys[t]
 
         if y_S[t] > 1:
             y_S[t] = 1
@@ -325,31 +351,31 @@ plt.show()
 if intervention == 0: # intervention competition
     print "intervention competition"
     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_pe.npy", OUT2)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RF.npy", OUT3)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RT.npy", OUT4)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RA.npy", OUT5)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_pe.npy", OUT8)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RF.npy", OUT10)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RT.npy", OUT11)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_Rtt_RA.npy", OUT12)
 if intervention == 1: # intervention demand BEM
     print "intervention demand BEM"
     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pe.npy", OUT2)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RF.npy", OUT3)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RT.npy", OUT4)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RA.npy", OUT5)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pe.npy", OUT8)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RF.npy", OUT10)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RT.npy", OUT11)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RA.npy", OUT12)
 if intervention == 2: # intervention demand BLM
     print "intervention demand BLM"
     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_pe.npy", OUT2)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RF.npy", OUT3)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RT.npy", OUT4)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RA.npy", OUT5)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_pe.npy", OUT8)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RF.npy", OUT10)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RT.npy", OUT11)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RA.npy", OUT12)
 if intervention == 3: # intervention demand MLM
     print "intervention demand MLM"
     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pe.npy", OUT2)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RF.npy", OUT3)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RT.npy", OUT4)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RA.npy", OUT5)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pe.npy", OUT8)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RF.npy", OUT10)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RT.npy", OUT11)
+    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_RA.npy", OUT12)
 
 # ################################################################################
 # ###########################  PLOT FILE  ########################################
@@ -369,11 +395,11 @@ dBRF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM
 dBRT = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RT.npy")
 dBRA = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RA.npy")
 # intervention demand BLM
-dLPE = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pe.npy")
-dLPF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_pf.npy")
-dLRF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RF.npy")
-dLRT = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RT.npy")
-dLRA = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BEM_RA.npy")
+dLPE = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_pe.npy")
+dLPF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_pf.npy")
+dLRF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RF.npy")
+dLRT = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RT.npy")
+dLRA = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_BLM_RA.npy")
 # intervention demand MLM
 dMPE = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pe.npy")
 dMPF = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R4_gamma_MLM_pf.npy")
@@ -390,29 +416,32 @@ yr = np.arange(1990,2025,1)
 # begin plotting demand intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(dMRF, label = "Fishers income", color = 'steelblue')
-b, = ax1.plot(dMRT, label = "Traders income", color = 'orange')
-c, = ax1.plot(dMRA, label = "Revenue Fishery", color = 'indianred')
+a, = ax1.plot(dMRF, label = "Fisher, MLM", color = 'steelblue', linestyle='-')
+b, = ax1.plot(dMRT, label = "Trader, MLM", color = 'orange', linestyle='-')
+c, = ax1.plot(dLRF, label = "EDM", color = 'steelblue', linestyle='--')
+d, = ax1.plot(dLRT, label = "Trader, EDM", color = 'orange', linestyle='--')
+e, = ax1.plot(dBRF, label = "BEM", color = 'steelblue', linestyle=':')
+f, = ax1.plot(dBRT, label = "Trader, BEM", color = 'orange', linestyle=':')
 # x-axis
 # add the second axes using subplot with ML
-ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-d, = ax2.plot(OUT7, color="lightgrey")
+# ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+# g, = ax2.plot(OUT3, color="lightgrey")
 # x-axis
 plt.xlim(2,tmax)
-plt.xlabel("time $years$",fontsize=22, **hfont)
+plt.xlabel("$year$",fontsize=22, **hfont)
 ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
-ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
+# ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 # y-axis
-ax1.set_ylabel("Revenue $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax1.set_ylim(0,3E9)
-ax2.set_ylabel("SST anomaly $C$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
-ax2.yaxis.tick_right()
-ax2.yaxis.set_label_position("right")
-ax2.tick_params(axis='y', colors='lightgrey')
-ax2.set_ylim(-90,90)
+ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax1.set_ylim(-.5E9,4E9)
+# ax2.set_ylabel("SST anomaly $C$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+# ax2.yaxis.tick_right()
+# ax2.yaxis.set_label_position("right")
+# ax2.tick_params(axis='y', colors='lightgrey')
+# ax2.set_ylim(-2,10)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.legend(handles=[a,b,c,d], loc=2, fontsize=14)
+plt.legend(handles=[a,b,c,e], loc=2, fontsize=12)
 # load and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support1.png',dpi=500)
 plt.show()
@@ -421,29 +450,28 @@ plt.show()
 # begin plotting competition intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(cRF, label = "Fishers income", color = 'steelblue')
-b, = ax1.plot(cRT, label = "Traders income", color = 'orange')
-c, = ax1.plot(cRA, label = "Revenue Fishery", color = 'indianred')
+a, = ax1.plot(cRF, label = "Fisher, MLM", color = 'steelblue')
+b, = ax1.plot(cRT, label = "Trader, MLM", color = 'orange')
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-d, = ax2.plot(OUT7, color="lightgrey")
+c, = ax2.plot(OUT3, color="lightgrey")
 # x-axis
 plt.xlim(2,tmax)
-plt.xlabel("time $years$",fontsize=22, **hfont)
+plt.xlabel("$year$",fontsize=22, **hfont)
 ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 # y-axis
-ax1.set_ylabel("Revenue $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax1.set_ylim(0,3E9)
+ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+ax1.set_ylim(-0.5E9,2.5E9)
 ax2.set_ylabel("SST anomaly $C$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 ax2.tick_params(axis='y', colors='lightgrey')
-ax2.set_ylim(-90,90)
+ax2.set_ylim(-1.5,5.5)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.legend(handles=[a,b,c,d], loc='best', fontsize=14)
+plt.legend(handles=[a,b], loc='best', fontsize=14)
 # load and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support2.png',dpi=500)
+fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support2.png',dpi=500)
 plt.show()

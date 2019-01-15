@@ -11,6 +11,7 @@ from pandas import *
 flag = 1 # 0 = BEM; 1 = MLM, # 2 = BLM
 # SST or SSTres: parameters, initial condition for tau, and MC parameter ranges
 mantle = 1 # 0 = use mantle, 1 = use tau
+migrate = 1 # 0 = use discrete function, 1 = use continuous function, 2 = use data
 
 # Standard set-up for model runs: x1110110
 tmax = 27 # model run, years
@@ -70,6 +71,20 @@ C[0] = 60438 # squid catch mean
 p_e[0] = 52035 # mean p_e comtrade, rounded
 p_f[0] = 8997 # mean p_f datamares, rounded
 
+#### Load dataset  #############################################################
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+#! load columns
+y = df1['year'] #
+pe = df1['pe_MXNiat'] #
+pf = df1['pf_MXNiat'] #
+ct = df1['C_t'] #
+ssh = df1['essh_avg'] #
+ml = df1['ML'] #
+ys = df1['y_S'] #
+
+### New max time
+tmax = len(y)
+
 ### Normalizes q values ########################################################
 ## calculates q as normalized value of tau over the time span provided
 qMax = 0 # is reverse bc is reverse to tau values
@@ -96,6 +111,19 @@ for t in np.arange(0,tmax):
 
 tauMin = min(tau)
 
+### continuous migration trigger ###############################################
+## calculates migration from a continuous sin/cos function
+xo = np.linspace(1991,2016,1000) # 100 linearly spaced numbers
+#y = np.sin(x)/x # computing the values of sin(x)/x
+yo = 4.1E-15 *np.exp(100*(b2*np.cos(xo)-b3*np.sin(xo)))
+
+plt.plot(xo,yo) # sin(x)/x
+plt.show()
+
+yo = np.array([0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0])
+plt.plot(y,yo)
+plt.plot(y,ys)
+plt.show()
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -127,13 +155,17 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, a1, B_h, B_f
             print "q low"
 
         # migration of squid
-        if mantle == 0: # USE DATA INPUT?
-            if ys[t] == 1: # run w/o data
-                y_S[t] = 4E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+        if migrate == 0: # use discrete function
+            y_S[t] = 4.1E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+
+        if migrate == 1: # use continuous function
+                y_S[t]= yo[t] # run with continuous function
+
+        if migrate == 2: # use data input: data is not available for the entire timeseries, the data gaps are filled with continuous function simulations
+            if ys[t] == 1:
+                y_S[t]= yo[t]
             else:
-                y_S[t]= ys[t] # run with data
-        if mantle == 1: # use simulation input
-            y_S[t] = 4E-15 *np.exp(100*(0.165387*np.cos(t)-0.287384*np.sin(t))) # what Greg provided
+                y_S[t]= ys[t]
 
         if y_S[t] > 1:
             y_S[t] = 1
@@ -217,7 +249,7 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, a1, B_h, B_f
 ################################################################################
 
 ##### Initiate arrays ##########################################################
-sim = np.arange(0,100) # number of simulations
+sim = np.arange(0,1) # number of simulations
 x = np.zeros(12) # set array to save parameters
 par = np.zeros((sim.shape[0],x.shape[0])) # matrix to save parameter values of each simulation
 cat = np.zeros((sim.shape[0],tau.shape[0])) # matrix to save catches in each time period of each simulation
@@ -289,6 +321,13 @@ for j in range(0,sim.shape[0]): # draw randomly a float in the range of values f
             rvf[j,i] = OUT10[i]
             rvt[j,i] = OUT11[i]
             rva[j,i] = OUT12[i]
+#
+
+
+#### calculate mean & C ########################################################
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
+#! load columns
+y = df1['year'] #
 
 lowC = np.zeros(y.shape[0]) # initiate variables for 95% confidence interval
 highC = np.zeros(y.shape[0])
