@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage{amsmath}
+\begin{document}
+To obtain an optimal parameter set for all three models, we built a Julia \cite{Bezanson2017} program which used the Ipopt \cite{Wachter2006} non-linear solver as a part of the JuMP \cite{Dunning2017} mathematical optimisation package.
+
+All values which could be identified empirically were configured as fixed values in the optimisation, and those that could be bounded by empirical data had said bounds applied.
+[perhaps outline the choice of fixed values here?]
+That leaves the following parameters and bounds for the optimisation of the BEM model:
+
+\begin{align*}
+    0.0 \leq &g \leq 3.2 \quad &\text{Population growth rate}\\
+    1000.0 \leq &\kappa \leq 2148.0 \quad &\text{Cost of processing}\\
+    0.0 \leq &E(t) \leq 1.0 \quad &\text{Fishing effort}\\
+    K-(0.3K) \leq &S(t) \leq K+(0.3K) \quad&\text{Squid population}\\
+    &p_f  \quad &\text{Price for fishers}\\
+    &C(t)  \geq 0.0 \quad &\text{Squid catch}\\
+    &p_m \geq 0.0 \quad &\text{Export/Market price}.
+\end{align*}
+
+
+Four constraints satisfy the BEM model, the top three being non-linear
+
+\begin{align}
+    S(t+1) &= S(t)\left[g S(t)\left(1-\frac{S(t)}{K}\right)-C(t)\right]\\
+    p_m(t) &= \gamma_m C(t)^{-\beta}\\
+    C(t) &= qE(t)S(t)\\
+    p_f(t) &= p_m(t)-\kappa
+\end{align}
+
+The non-linear objective function is a sum of least squares match to the empirical catch $C$ and price for fishers $p_f$ found in [??].
+
+Optimal values for the two unkown variables in the BEM model were found to be $g = 0.5935$ and $\kappa = 2148.0$.
+This hard constraint on the cost of processing is one reason why the price for fishers is not captured correctly in the BEM model (see Figure ??).
+Parameters such as Effort, Catch etc are shown in Figure ?? of the main text.
+
+To obtain results for the EDM and MLM models, all optimal parameters of the BEM model are used.
+This allows us to directly compare the improvements mady by including the additional social interactions discussed in the main text.
+
+
+\newpage
+
+\bibliography{methods}
+\bibliographystyle{ieeetr}
+
+\end{document}
