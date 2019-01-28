@@ -297,10 +297,10 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trend $C$', fontsize = 22)
+ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
 plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude $C$', fontsize = 22)
+ax.set_xlabel('Amplitude', fontsize = 22)
 plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
@@ -324,14 +324,14 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trend $C$', fontsize = 22)
+ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
 plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude $C$', fontsize = 22)
+ax.set_xlabel('Amplitude', fontsize = 22)
 plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
-cb.set_label('Revenue fishers $MXN$', rotation=270, labelpad=40, fontsize = 22)
+cb.set_label('Fishers income $MXN$', rotation=270, labelpad=40, fontsize = 22)
 # plt.clim([0,1])
 ## save and show
 # fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b3_RF.png",dpi=500)
@@ -356,10 +356,10 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trend $C$', fontsize = 22)
+ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
 plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude $C$', fontsize = 22)
+ax.set_xlabel('Amplitude', fontsize = 22)
 plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()

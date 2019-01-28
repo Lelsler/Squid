@@ -473,7 +473,7 @@ ax1.fill_between(x, highNoR_pf, lowNoR_pf, where = highNoR_pf >= lowNoR_pf, face
 ax1.fill_between(x, highOR_pf, lowOR_pf, where = highOR_pf >= lowOR_pf, facecolor='sage', alpha= 0.3, zorder = 0)
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-line5, = ax2.plot(ml, color="lightgrey")
+line5, = ax2.plot(ys, color="lightgrey")
 # x-axis
 ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
 ax1.set_xlim(10,tmax-2)
@@ -484,9 +484,9 @@ ax2.set_xlabel("Year",fontsize=20, **hfont)
 # y-axis
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
-ax2.set_ylim(0,140)
+ax2.set_ylim(0,1)
 ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax2.set_ylabel("Mantle length $cm$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("Proportion migrated squid", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
 ax2.tick_params(axis='y', colors='lightgrey')
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend

@@ -424,21 +424,21 @@ e, = ax1.plot(dBRF, label = "BEM", color = 'steelblue', linestyle=':')
 f, = ax1.plot(dBRT, label = "Trader, BEM", color = 'orange', linestyle=':')
 # x-axis
 # add the second axes using subplot with ML
-# ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-# g, = ax2.plot(OUT3, color="lightgrey")
+ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
+g, = ax2.plot(OUT3, color="lightgrey")
 # x-axis
 plt.xlim(2,tmax)
 plt.xlabel("Year",fontsize=22, **hfont)
 ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
-# ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
+ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 # y-axis
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.set_ylim(-.5E9,4E9)
-# ax2.set_ylabel("SST anomaly $C$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
-# ax2.yaxis.tick_right()
-# ax2.yaxis.set_label_position("right")
-# ax2.tick_params(axis='y', colors='lightgrey')
-# ax2.set_ylim(-2,10)
+ax2.set_ylabel("SST anomaly $^\circ C$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
+ax2.tick_params(axis='y', colors='lightgrey')
+ax2.set_ylim(-2,15)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.legend(handles=[a,b,c,e], loc=2, fontsize=12)
@@ -455,7 +455,7 @@ b, = ax1.plot(cRT, label = "Trader, MLM", color = 'orange')
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-c, = ax2.plot(OUT3, color="lightgrey")
+c, = ax2.plot(yo, color="lightgrey")
 # x-axis
 plt.xlim(2,tmax)
 plt.xlabel("Year",fontsize=22, **hfont)
@@ -464,11 +464,11 @@ ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 # y-axis
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.set_ylim(-0.5E9,2.5E9)
-ax2.set_ylabel("SST anomaly $C$", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("Proportion of migrated squid", rotation=270, color='lightgrey', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 ax2.tick_params(axis='y', colors='lightgrey')
-ax2.set_ylim(-1.5,5.5)
+ax2.set_ylim(-0.2,1)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.legend(handles=[a,b], loc='best', fontsize=14)
