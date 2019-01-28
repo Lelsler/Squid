@@ -9,6 +9,7 @@ from pandas import *
 
 #### Model w/o relationships ###################################################
 flag = 1 # 0 = BEM; 1 = MLM, # 2 = BLM
+migrate = 0 # 0 = use discrete function, 1 = use continuous function, 2 = use data
 
 ### Parameters #################################################################
 tmax = 35 # model run, years
@@ -138,7 +139,18 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, 
 
 
         ##### migration of squid
-        y_S[t]= yo[t] # timeseries from earlier input
+        # migration can be either calculated from the function (discreteness has its problems), input from the continuous previously calculated data or from measured data
+        if migrate == 0: # use discrete function
+            y_S[t] = 4.1E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+
+        if migrate == 1: # use continuous function
+                y_S[t]= yo[t] # run with continuous function
+
+        if migrate == 2: # use data input: data is not available for the entire timeseries, the data gaps are filled with continuous function simulations
+            if ys[t] == 1:
+                y_S[t]= yo[t]
+            else:
+                y_S[t]= ys[t]
 
         if y_S[t] > 1:
             y_S[t] = 1
@@ -227,29 +239,31 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, 
 ################################################################################
 
 ##### Run the model ############################################################
-b1 = np.arange(0.013,0.027,0.0001)
-b2 = np.arange(5.25,8.75,0.025) ## continue here!!
+b1 = np.arange(0.0195,0.021,0.0000075) # trens. steps to test b1 parameter
+b3 = np.arange(0.1,0.5,0.002) # amplitude. steps to test b3 parameter
 
 ##### Initiate arrays ##########################################################
-cat = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save catches in each time period of each simulation
-pri = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save prices for fishers in each time period of each simulation
-mar = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save market prices in each time period of each simulation
-gap1 = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save price gap mean in each time period of each simulation
-gap2 = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save price gap stdv in each time period of each simulation
-tem = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save tau in each time period of each simulation
-mig = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save migrate squid in each time period of each simulation
-cco = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save catchability in each time period of each simulation
-pop = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save squid population in each time period of each simulation
-eff = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save effort in each time period of each simulation
-rff = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save revenue fishers in each time period of each simulation
-rtt = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save revenue traders in each time period of each simulation
-raa = np.zeros((b1.shape[0],b2.shape[0])) # matrix to save revenue all fishery in each time period of each simulation
+cat = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save catches in each time period of each simulation
+pri = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save prices for fishers in each time period of each simulation
+mar = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save market prices in each time period of each simulation
+gap1 = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save price gap mean in each time period of each simulation
+gap2 = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save price gap stdv in each time period of each simulation
+gap3 = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save icnome gap mean in each time period of each simulation
+tem = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save tau in each time period of each simulation
+mig = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save migrate squid in each time period of each simulation
+cco = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save catchability in each time period of each simulation
+pop = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save squid population in each time period of each simulation
+eff = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save effort in each time period of each simulation
+rff = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save revenue fishers in each time period of each simulation
+rtt = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save revenue traders in each time period of each simulation
+raa = np.zeros((b1.shape[0],b3.shape[0])) # matrix to save revenue all fishery in each time period of each simulation
 
 for i in np.arange(0,b1.shape[0]):
-    for j in np.arange(0,b2.shape[0]):
-        tau, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA = model(b0, b1[i], b2[j], b3, l1, l2, a1, f, d, g, K, h1, h2, gamma, beta, c_p, c_t, flag)
+    for j in np.arange(0,b3.shape[0]):
+        tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1[i], b2, b3[j], l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, flag)
         gap1[i,j]= np.mean(p_f/p_e)
         gap2[i,j]= np.std(p_f/p_e)
+        gap3[i,j]= np.mean(RF/RT)
 
         cat[i,j]= np.mean(C)
         pri[i,j]= np.mean(p_f)
@@ -272,8 +286,8 @@ for i in np.arange(0,b1.shape[0]):
 ##### Plot 1 ###################################################################
 ## define dimensions
 y = b1 #  y axis
-x = b2 #  x axis
-z = mar #  output data
+x = b3 #  x axis
+z = gap1 #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=0.1,left=0.1,right=0.9)
@@ -283,26 +297,23 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trend $b1$', fontsize = 22)
-plt.ylim(0.013,0.026)
+ax.set_ylabel('Trend $C$', fontsize = 22)
+plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude $b2$', fontsize = 22)
-plt.xlim(5.25,8.5)
+ax.set_xlabel('Amplitude $C$', fontsize = 22)
+plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
-cb.set_label((r'mean price gap $\frac{P_f}{P_m}$'), rotation=270, labelpad=40, fontsize = 22)
+cb.set_label('Mean price gap', rotation=270, labelpad=40, fontsize = 22)
 # plt.clim([0,1])
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b2_mean.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b3_gap.png",dpi=500)
 plt.show()
 
-################################################################################
-###################################  SI PLOTS ##################################
-################################################################################
 
 ## define dimensions
 y = b1 #  y axis
-x = b2 #  x axis
+x = b3 #  x axis
 z = rff #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -313,23 +324,28 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trend $b1$', fontsize = 22)
-plt.ylim(0.013,0.026)
+ax.set_ylabel('Trend $C$', fontsize = 22)
+plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude $b2$', fontsize = 22)
-plt.xlim(5.25,8.5)
+ax.set_xlabel('Amplitude $C$', fontsize = 22)
+plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Revenue fishers $MXN$', rotation=270, labelpad=40, fontsize = 22)
 # plt.clim([0,1])
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b2_SI_RF.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b3_RF.png",dpi=500)
 plt.show()
+
+
+################################################################################
+###################################  SI PLOTS ##################################
+################################################################################
 
 
 ## define dimensions
 y = b1 #  y axis
-x = b2 #  x axis
+x = b3 #  x axis
 z = cat #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -340,23 +356,24 @@ plt.pcolormesh(x, y, z, cmap="Spectral")
 # both axis
 plt.tick_params(axis=1, which='major', labelsize=12)
 ## set y-axis
-ax.set_ylabel('Trend $b1$', fontsize = 22)
-plt.ylim(0.013,0.026)
+ax.set_ylabel('Trend $C$', fontsize = 22)
+plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude $b2$', fontsize = 22)
-plt.xlim(5.25,8.5)
+ax.set_xlabel('Amplitude $C$', fontsize = 22)
+plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22)
 # plt.clim([0,1])
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b2_SI_C.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b3_SI_C.png",dpi=500)
 plt.show()
 
 ################################################################################
 #############################  RUN TIMESERIES ##################################
 ################################################################################
-#
+# I WILL HAVE TO UPDATE THIS PART BEFORE IT CAN RUN AGAIN
+
 # OUT1 = np.zeros(tau.shape[0])
 # OUT2 = np.zeros(tau.shape[0])
 # OUT3 = np.zeros(tau.shape[0])

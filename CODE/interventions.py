@@ -428,7 +428,7 @@ f, = ax1.plot(dBRT, label = "Trader, BEM", color = 'orange', linestyle=':')
 # g, = ax2.plot(OUT3, color="lightgrey")
 # x-axis
 plt.xlim(2,tmax)
-plt.xlabel("$year$",fontsize=22, **hfont)
+plt.xlabel("Year",fontsize=22, **hfont)
 ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 # ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 # y-axis
@@ -458,7 +458,7 @@ ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
 c, = ax2.plot(OUT3, color="lightgrey")
 # x-axis
 plt.xlim(2,tmax)
-plt.xlabel("$year$",fontsize=22, **hfont)
+plt.xlabel("Year",fontsize=22, **hfont)
 ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 12)
 # y-axis
@@ -473,5 +473,5 @@ ax2.set_ylim(-1.5,5.5)
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.legend(handles=[a,b], loc='best', fontsize=14)
 # load and show
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support2.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R4_support2.png',dpi=500)
 plt.show()
