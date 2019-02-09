@@ -369,6 +369,35 @@ cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22)
 # fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b3_SI_C.png",dpi=500)
 plt.show()
 
+
+
+## define dimensions
+y = b1 #  y axis
+x = b3 #  x axis
+z = rtt #  output data
+## sub plot
+fig1 = plt.figure(figsize=[9,6])
+gs = gridspec.GridSpec(1,1,bottom=0.1,left=0.1,right=0.9)
+ax = fig1.add_subplot(gs[0,0])
+pcObject = ax.pcolormesh(x,y,z)
+plt.pcolormesh(x, y, z, cmap="Spectral")
+# both axis
+plt.tick_params(axis=1, which='major', labelsize=12)
+## set y-axis
+ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
+plt.ylim(0.0195,0.021)
+## set x-axis
+ax.set_xlabel('Amplitude', fontsize = 22)
+plt.xlim(0.1,0.5)
+## colorbar
+cb = plt.colorbar()
+cb.set_label('Traders income $MXN$', rotation=270, labelpad=40, fontsize = 22)
+# plt.clim([0,1])
+## save and show
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R_b1b3_SI_RT.png",dpi=500)
+plt.show()
+
+
 ################################################################################
 #############################  RUN TIMESERIES ##################################
 ################################################################################
