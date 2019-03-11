@@ -1,16 +1,15 @@
 #### Import packages ###########################################################
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
-import scipy
 from pandas import *
+import scipy
 
 #################### CHOICES ###################################################
 flag = 1 # 0 = BEM; 1 = MLM, # 2 = BLM
-# SST or SSTres: parameters, initial condition for tau, and MC parameter ranges
-mantle = 1 ### default 1 for this model # 0 = use mantle, 1 = use tau
+# SST or SSTres: parameters, initial condition for T, and MC parameter ranges
+mantle = 1 ### default 1 for this model # 0 = use mantle, 1 = use T
 intervention = 0 # 0 = competition intervention; 1 = demand BEM; 2 = demand BLM; 3= demand MLM
 competition = 1 # 0 = no intervention; 1 = intervention competition
 demand = 0 # 0 = no intervention; 1 = intervention demand
@@ -23,53 +22,53 @@ migrate = 1 # 0 = use discrete function, 1 = use continuous function, 2 = use da
 
 ### Parameters #################################################################
 tmax = 35 # model run, years
-b0 = -40.910 #
-b1 = 0.020 #
-b2 = 0.165 #
-b3 = -0.287 #
-l1 = -0.0912  #
-l2 = 0.0231 #
-c_t = 107291548 # cost of fishing
+a0 = -40.910 #
+a1 = 0.020 #
+a2 = 0.165 #
+a3 = -0.287 #
+k = -0.0912  #
+l = 0.0231 #
+sigma = 107291548 # cost of fishing
 qc = 0.1 # catchability constant
 f = 0 # intercept of trader cooperation
-d = 1 # slope of trader cooperation
+delta = 1 # slope of trader cooperation
 K = 1208770 # carrying capacity
 g = 1.4 # population growth rate
 gamma = 49200 # maximum demand
 beta = 0.0736 # slope of demand-price function
-c_p = 1776.25 # cost of processing
+kappa = 1776.25 # cost of processing
 
 h1 = 2E-10 # scale E
 h2 = 0.6596 # scale E
 
 ### Variables ##################################################################
-tau = np.zeros(tmax) # temperature
+T = np.zeros(tmax) # temperature
 q = np.zeros(tmax) # catchability squid population
 ML = np.zeros(tmax) # mantle length
-y_S = np.zeros(tmax) # distance of squid migration from initial fishing grounds
-R_tt = np.zeros(tmax) # trader cooperation
+M = np.zeros(tmax) # distance of squid migration from initial fishing grounds
+R = np.zeros(tmax) # trader cooperation
 S = np.zeros(tmax) # size of the squid population
 Escal = np.zeros(tmax) # scale effort
 E = np.zeros(tmax) # fishing effort
 C = np.zeros(tmax) # squid catch
-p_e = np.zeros(tmax) # export price
+p_m = np.zeros(tmax) # export price
 p_min = np.zeros(tmax) # minimum wage
 p_f = np.zeros(tmax) # price for fishers
-RFn = np.zeros(tmax) # revenue of fishers normalized
-RF = np.zeros(tmax) # revenue of fishers
-RT = np.zeros(tmax) # revenue of traders
+I_fn = np.zeros(tmax) # revenue of fishers normalized
+I_f = np.zeros(tmax) # revenue of fishers
+I_t = np.zeros(tmax) # revenue of traders
 RA = np.zeros(tmax) # revenue all fishery
 G = np.zeros(tmax) # pay gap between fishers and traders
 
 ### Initial values #############################################################
-tau[0] = -0.80 # for SSTres
+T[0] = -0.80 # for SSTres
 q[0] = 0.05 # squid catchability
-y_S[0] = 0.5 # proportion of migrated squid
-R_tt[0] = 0.5 # trader cooperation
+M[0] = 0.5 # proportion of migrated squid
+R[0] = 0.5 # trader cooperation
 S[0] = 610075 # size of the squid population, mean
 E[0] = 0.5 # fishing effort
 C[0] = 60438 # squid catch mean
-p_e[0] = 52035 # mean p_e comtrade, rounded
+p_m[0] = 52035 # mean p_m comtrade, rounded
 p_f[0] = 8997 # mean p_f datamares, rounded
 
 ### intervention parameters and variables ######################################
@@ -86,60 +85,56 @@ df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data
 y = df1['year'] #
 pe = df1['pe_MXNiat'] #
 pf = df1['pf_MXNiat'] #
-ct = df1['C_t'] #
+ct = df1['sigma'] #
 ssh = df1['essh_avg'] #
 ml = df1['ML'] #
-ys = df1['y_S'] #
+ys = df1['M'] #
 
 ### continuous migration trigger ###############################################
 ## calculates migration from a continuous sin/cos function
-xo = np.linspace(1980,2015,1000) # 1000 linearly spaced numbers
-#temp = b0 +b1 *(xo) +b2 *np.cos(xo) + b3 *np.sin(xo)
+xo = np.linspace(1980,1990,1000) # 1000 linearly spaced numbers
+#temp = a0 +a1 *(xo) +a2 *np.cos(xo) + a3 *np.sin(xo)
 temp = -40.910 + 0.165*np.cos(xo)-0.287*np.sin(xo)+0.02*xo
-yo = 4.1E-15 *np.exp(100*(b2*np.cos(xo)-b3*np.sin(xo)))
+yo = alpha *np.exp(100*(a2*np.cos(xo)-a3*np.sin(xo)))
 plt.plot(xo,yo) # sin(x)/x
 plt.show()
 
 y = np.linspace(1991,2025,1000)
 x = np.zeros(1000)
 for i in np.arange(0,1000,1):
-    y[i] = 4.1E-15 *np.exp(100*(b2*np.cos(xo[i])-b3*np.sin(xo[i])))
+    y[i] = alpha *np.exp(100*(a2*np.cos(xo[i])-a3*np.sin(xo[i])))
     if y[i] > 0.9:
          x[i] = xo[i]
 
 x = np.around(x, decimals=0)
 plt.plot(xo,x) # sin(x)/x
 
-#yo = np.array([0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0.9773642085169757,0,0,0,0,0,0, 0.9773642085169757,0,0,0,0,0,0.9773642085169757,0])
 
 ### Normalizes q values ########################################################
-## calculates q as normalized value of tau over the time span provided
-qMax = 0 # is reverse bc is reverse to tau values
-qMin = 0.2
+## calculates q as normalized value of T over the time span provided
+qMax = 0 # is reverse bc is reverse to T values
+qMin = 0.1
 valueScaled = np.zeros(tmax)
 
-def translate(b0, b1, b2, b3, tau, qMin, qMax):
-    tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
+def translate(a0, a1, a2, a3, T, qMin, qMax):
+    T[t]= a0 +a1 *(t+1990) +a2 *np.cos(t+1990) + a3 *np.sin(t+1990)
 
     # Figure out how 'wide' each range is
-    tauSpan = max(tau) - min(tau)
+    TSpan = max(T) - min(T)
     qSpan = qMax - qMin
 
-    # Emax = 1 + (99366-c_p) *qc *1 *1208770 -c_t *1 # c_t is per trip so we need to upscale E hr > fisher > trip
-    # Emin = 1 + (99366-c_p) *0 *1 *1208770 -c_t *1 # c_t is per trip so we need to upscale E hr > fisher > trip
-
     # Convert the left range into a 0-1 range (float)
-    valueScaled[t] = float(tau[t] - min(tau)) / float(tauSpan)
+    valueScaled[t] = float(T[t] - min(T)) / float(TSpan)
 
     # Convert the 0-1 range into a value in the right range.
     q = qMin + (valueScaled * qSpan)
 
-    return q, tauSpan, qSpan
+    return q, TSpan, qSpan
 
 for t in np.arange(0,tmax):
-     q, tauSpan, qSpan = translate(b0, b1, b2, b3, tau, qMin, qMax)
+     q, TSpan, qSpan = translate(a0, a1, a2, a3, T, qMin, qMax)
 
-tauMin = min(tau)
+TMin = min(T)
 
 
 ################################################################################
@@ -147,21 +142,21 @@ tauMin = min(tau)
 ################################################################################
 
 ### Define Model ###############################################################
-def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, flag):
+def model(a0, a1, a2, a3, k, l, qc, qMin, qSpan, TSpan, TMin, alpha, delta, g, K, h1, h2, gamma, beta, kappa, sigma, flag):
     for t in np.arange(1,tmax):
-        tau[t]= b0 +b1 *(t+1990) +b2 *np.cos(t+1990) + b3 *np.sin(t+1990)
+        T[t]= a0 +a1 *(t+1990) +a2 *np.cos(t+1990) + a3 *np.sin(t+1990)
         time = 1990 +t
 
         # mantle length and catchability
         if mantle == 0:
             if ml[t] == 1:
-                valueScaled[t] = float(tau[t] - tauMin) / float(tauSpan)
+                valueScaled[t] = float(T[t] - TMin) / float(TSpan)
                 q[t] = qMin + (valueScaled[t] * qSpan)
             else:
                 ML[t]= ml[t]
                 q[t]= 0.0018 *ML[t] - 0.0318
         if mantle == 1:
-            valueScaled[t] = float(tau[t] - tauMin) / float(tauSpan)
+            valueScaled[t] = float(T[t] - TMin) / float(TSpan)
             q[t] = qMin + (valueScaled[t] * qSpan)
 
         if q[t] > qc:
@@ -173,35 +168,35 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, 
 
         # migration of squid
         if migrate == 0: # use discrete function
-            y_S[t] = 4.1E-15 *np.exp(100*(b2*np.cos(t)-b3*np.sin(t)))
+            M[t] = alpha *np.exp(100*(a2*np.cos(t)-a3*np.sin(t)))
 
         if migrate == 1: # use continuous function
                 if any(time == x):
-                    y_S[t] = 1
-                #y_S[t]= yo[t] # run with continuous function
+                    M[t] = 1
+                #M[t]= yo[t] # run with continuous function
 
         if migrate == 2: # use data input: data is not available for the entire timeseries, the data gaps are filled with continuous function simulations
             if ys[t] == 1:
-                y_S[t]= yo[t]
+                M[t]= yo[t]
             else:
-                y_S[t]= ys[t]
+                M[t]= ys[t]
 
-        if y_S[t] > 1:
-            y_S[t] = 1
+        if M[t] > 1:
+            M[t] = 1
             print "yS high"
-        elif y_S[t] < 0:
-            y_S[t] = 0
+        elif M[t] < 0:
+            M[t] = 0
             print "yS low"
 
         ## trader cooperation intervention
         if t <= timeInt:
-            R_tt[t] = f+ np.exp(-d* y_S[t])
+            R[t] = np.exp(-delta* M[t])
         else:
             if competition == 0:
-                R_tt[t] = f+ np.exp(-d* y_S[t])
+                R[t] = np.exp(-delta* M[t])
             if competition == 1:
-                F[t] = F[t-1]- (i_e * R_tt[t-1])
-                R_tt[t] = F[t]+ np.exp(-d* y_S[t])
+                F[t] = F[t-1]- (i_e * R[t-1])
+                R[t] = F[t]+ np.exp(-delta* M[t])
 
         #### switch between models ####
         if flag == 0: # squid population BEM
@@ -211,11 +206,11 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, 
 
         #### switch between models ####
         if flag == 0: # effort BEM
-            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+            Escal[t] = E[t-1] + p_f[t-1] *qc *E[t-1] *S[t-1] -sigma *E[t-1] # sigma is per trip so we need to upscale E hr > fisher > trip
             E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
 
         if flag >= 1: # effort MLM, BLM
-            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -c_t *E[t-1] # c_t is per trip so we need to upscale E hr > fisher > trip
+            Escal[t] = E[t-1] + p_f[t-1] *q[t-1] *E[t-1] *S[t-1] -sigma *E[t-1] # sigma is per trip so we need to upscale E hr > fisher > trip
             # fishing effort scaled
             E[t] = h1 *Escal[t] + h2 # Escal €[-3,10E+09; 1,60E+09]
 
@@ -237,78 +232,77 @@ def model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, 
 
         ## demand intervention
         if t <= timeInt:
-            p_e[t] = gamma* (C[t])**(-beta)
+            p_m[t] = gamma* (C[t])**(-beta)
         else:
             if demand == 0:
-                p_e[t] = gamma* (C[t])**(-beta)
+                p_m[t] = gamma* (C[t])**(-beta)
             if demand == 1:
-                p_e[t] = (gamma *(1+ i_e*0.4 *(t -timeInt))) *(C[t])**(-beta)
+                p_m[t] = (gamma *(1+ i_e*0.4 *(t -timeInt))) *(C[t])**(-beta)
 
         # export price
-        if p_e[t] >= 99366:
-            p_e[t] = 99366
+        if p_m[t] >= 99366:
+            p_m[t] = 99366
             print "pe high"
 
         #### switch between models ####
         if flag == 0: # BEM
             # price for fishers
-            p_f[t] = p_e[t] -c_p
+            p_f[t] = p_m[t] -kappa
         if flag == 2: # BLM
-            p_f[t] = p_e[t] -c_p    # price for fishers
+            p_f[t] = p_m[t] -kappa    # price for fishers
         if flag == 1: #MLM
-            p_min[t]= (c_t *E[t])/C[t] # ->must be MXN/ton to fit into p_f calc
+            p_min[t]= (sigma *E[t])/C[t] # ->must be MXN/ton to fit into p_f calc
             # price for fishers
-            p_f[t] = (p_e[t] -c_p) *(1-R_tt[t]) +R_tt[t] *p_min[t]
+            p_f[t] = (p_m[t] -kappa) *(1-R[t]) +R[t] *p_min[t]
 
-        if p_f[t] >= (p_e[t] -c_p): # limit price of fishers
-            p_f[t] = (p_e[t] -c_p)
+        if p_f[t] >= (p_m[t] -kappa): # limit price of fishers
+            p_f[t] = (p_m[t] -kappa)
 
         # revenue of fishers
-        RF[t] = C[t] *p_f[t] -c_t *E[t]
+        I_f[t] = C[t] *p_f[t] -sigma *E[t]
         # revenue of traders
-        RT[t] = C[t] *p_e[t] -RF[t] -c_p
+        I_t[t] = C[t] *p_m[t] -I_f[t] -kappa
         # revenue of all fishery
-        RA[t] = C[t] *p_e[t]
+        RA[t] = C[t] *p_m[t]
 
         # pay gap
-        G[t] = RF[t]/RT[t]
+        G[t] = I_f[t]/I_t[t]
 
-        # print t, tau[t], ML[t], q[t], y_S[t], S[t], E[t], C[t], p_e[t], p_f[t]
-    return tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G
+        # print t, T[t], ML[t], q[t], M[t], S[t], E[t], C[t], p_m[t], p_f[t]
+    return T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, RA, G
 
 ################################################################################
 ###########################  RUN MODEL FILE  ###################################
 ################################################################################
 
 ##### initiate output ###########################################################
-OUT1 = np.zeros(tau.shape[0])
-OUT2 = np.zeros(tau.shape[0])
-OUT3 = np.zeros(tau.shape[0])
-OUT4 = np.zeros(tau.shape[0])
-OUT5 = np.zeros(tau.shape[0])
-OUT6 = np.zeros(tau.shape[0])
-OUT7 = np.zeros(tau.shape[0])
-OUT8 = np.zeros(tau.shape[0])
-OUT9 = np.zeros(tau.shape[0])
-OUT10 = np.zeros(tau.shape[0])
-OUT11 = np.zeros(tau.shape[0])
-OUT12 = np.zeros(tau.shape[0])
+OUT1 = np.zeros(T.shape[0])
+OUT2 = np.zeros(T.shape[0])
+OUT3 = np.zeros(T.shape[0])
+OUT4 = np.zeros(T.shape[0])
+OUT5 = np.zeros(T.shape[0])
+OUT6 = np.zeros(T.shape[0])
+OUT7 = np.zeros(T.shape[0])
+OUT8 = np.zeros(T.shape[0])
+OUT9 = np.zeros(T.shape[0])
+OUT10 = np.zeros(T.shape[0])
+OUT11 = np.zeros(T.shape[0])
+OUT12 = np.zeros(T.shape[0])
 
 ##### Run the model ############################################################
 for i in np.arange(1,tmax):
-        tau, ML, q, y_S, R_tt, S, E, C, p_e, p_f, RF, RT, RA, G = model(b0, b1, b2, b3, l1, l2, qc, qMin, qSpan, tauSpan, tauMin, d, f, g, K, h1, h2, gamma, beta, c_p, c_t, flag)
+        T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, RA, G = model(a0, a1, a2, a3, k, l, qc, qMin, qSpan, TSpan, TMin, alpha, delta, g, K, h1, h2, gamma, beta, kappa, sigma, flag)
         OUT1[i]= p_f[i]
         OUT2[i]= C[i]
-        OUT3[i]= tau[i]
-        OUT4[i]= y_S[i]
+        OUT3[i]= T[i]
+        OUT4[i]= M[i]
         OUT5[i]= q[i]
         OUT6[i]= S[i]
         OUT7[i]= E[i]
-        OUT8[i]= p_e[i]
+        OUT8[i]= p_m[i]
         OUT9[i]= G[i]
-        OUT10[i]= RF[i]
-        OUT11[i]= RT[i]
-        OUT12[i]= RA[i]
+        OUT10[i]= I_f[i]
+        OUT11[i]= I_t[i]
 
 ################################################################################
 ###########################  PLOT FILE FROM OUTPUT  ############################
