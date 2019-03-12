@@ -68,16 +68,14 @@ C[0] = 60438 # squid catch mean
 p_m[0] = 52035 # mean p_m comtrade, rounded
 p_f[0] = 8997 # mean p_f datamares, rounded
 
-#### Load dataset  #############################################################
-df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
-#! load columns
-y = df1['year'] #
-pe = df1['pe_MXNiat'] #
-pf = df1['pf_MXNiat'] #
-ct = df1['C_t'] #
-ssh = df1['essh_avg'] #
-ml = df1['ML'] #
-ys = df1['y_S'] #
+### Load dataset ###############################################################
+df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/squid_all_plot_data.xlsx', sheetname='Sheet1')
+yr = df1['year'] # year
+VolAll = df1['C_ALL'] # catch data all locations datamares
+PrAll = df1['pf_ALL'] # price data all locations datamares
+ml = df1['ML'] # mantle length average per year
+ys = df1['M_new'] # migration data from long catch timeseries
+ssh = df1['sst_anom'] # SST anomaly
 
 ### catchability scaling
 def translate(a0, a1, a2, a3, qc):
@@ -92,7 +90,6 @@ Tmin = min(T)
 Tmax = max(T)
 
 q = qc-(qc* ((T-Tmin)/(Tmax-Tmin)))
-
 
 ### continuous migration
 xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
@@ -109,7 +106,8 @@ Mmax = max(ye)
 Mmin = min(ye)
 
 xe = np.around(xe, decimals=0)
-
+plt.plot(xo,ye)
+plt.show()
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -131,8 +129,8 @@ def model(a0, a1, a2, a3, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma
              xe[i] = xo[i]
 
     # supplementary re-scale migration
-    Mmax = max(ye)
-    Mmin = min(ye)
+    # Mmax = max(ye)
+    # Mmin = min(ye)
 
     if Mmax > 1:
         Mmax = 1

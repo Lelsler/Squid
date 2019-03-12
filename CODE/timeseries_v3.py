@@ -354,29 +354,12 @@ meanEDM_P =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price
 lowEDM_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_lowC.npy")
 highEDM_C = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_highC.npy")
 meanEDM_C =np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_meanC.npy")
-#
-# ### Load dataset ###############################################################
-# df1 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/R3_data.xlsx', sheetname='Sheet1')
-# #! load columns
-# yr = df1['year'] #
-# pe = df1['pe_MXNiat'] #
-# pf = df1['pf_MXNiat'] #
-# ct = df1['C_t'] #
-# ssh = df1['essh_avg'] #
-# ml = df1['ML'] #
-# ys = df1['y_S'] #
-#
-# df2 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/PriceVolDataCorrected.xlsx', sheetname='Sheet1')
-# # Load columns
-# VolAll = df2['tons_DM'] ## CATCH DATA
-# PrAll = df2['priceMXNia_DM'] ## PRICE DATA
 
-### New max time ###############################################################
-tmax = len(yr)
+
+### New settings ###############################################################
+tmax = len(yr) # max time
 x = np.arange(0,len(yr))
-
-### font ######################################################################
-hfont = {'fontname':'Helvetica'}
+hfont = {'fontname':'Helvetica'} # font
 
 #####! PLOT MODEL  #############################################################
 fig = plt.figure()
@@ -410,7 +393,7 @@ plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
 plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], fontsize= 11)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support1MC.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.png',dpi=500)
 plt.show()
 
 fig = plt.figure()
@@ -445,7 +428,7 @@ plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
 plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], loc=1, fontsize= 11)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/R1_support2MC.png',dpi=200)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.png',dpi=200)
 plt.show()
 
 ### CALCULATE r squared ########################################################
