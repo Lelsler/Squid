@@ -404,7 +404,7 @@ plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
 plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], loc=2, fontsize= 12)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.png',dpi=500,transparent=True)
 plt.show()
 
 fig = plt.figure()
@@ -443,7 +443,7 @@ plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
 plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], loc=1, fontsize= 12)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.png',dpi=200)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.png',dpi=200,transparent=True)
 plt.show()
 
 ### CALCULATE r squared ########################################################

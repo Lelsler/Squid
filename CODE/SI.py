@@ -86,6 +86,21 @@ plt.ylabel("Proportion of migrated squid", rotation=90, labelpad=5, fontsize=20,
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_M.png',dpi=500)
 plt.show()
 
+### mantle length
+fig = plt.figure()
+# add the first axes using subplot
+ax1 = fig.add_subplot(111)
+line1, = ax1.plot(ml, color = "black")
+# x-axis
+ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize= 12)
+ax1.set_xlim(0,len(yr))
+# y-axis
+plt.ylabel("Mantle length $cm$", rotation=90, labelpad=5, fontsize=20, **hfont)
+# save and show
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_ML.png',dpi=500)
+plt.show()
+
+
 ### sst anomaly
 fig = plt.figure()
 # add the first axes using subplot
@@ -106,9 +121,9 @@ x = range(0,130000)
 y = range(0,18000)
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.scatter(cg,pg, s= 30, c='b', marker='o', label='Guaymas')
-ax1.scatter(cs,ps, s= 30, c='y', marker='o', label='Santa Rosalia')
-ax1.scatter(cr,pr, s= 30, c='r', marker='o', label='Remaining offices')
+ax1.scatter(cs,ps, s= 30, c='red', marker='o', label='Santa Rosalia')
+ax1.scatter(cg,pg, s= 30, c='blue', marker='o', label='Guaymas')
+ax1.scatter(cr,pr, s= 30, c='black', marker='o', label='Remaining offices')
 # axis
 ax1.set_xlim(0,5E4)
 plt.xlabel("Catch $tons$",fontsize=20)

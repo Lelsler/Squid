@@ -275,10 +275,18 @@ for i in np.arange(0,a1.shape[0]):
         rff[i,j]= np.mean(I_f)
         rtt[i,j]= np.mean(I_t)
 
+# np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_gap.npy", gap1)
+# np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_pf.npy", pri)
+# np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_C.npy", cat)
 
 ################################################################################
 ################################  PLOT FILE  ###################################
 ################################################################################
+
+# gap1 = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_gap.npy")
+# pri = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_pf.npy")
+# cat = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_C.npy")
+
 
 ##### Plot 1 ###################################################################
 ## define dimensions
@@ -293,11 +301,11 @@ pcObject = ax.pcolormesh(x,y,z)
 plt.pcolormesh(x, y, z, cmap="Spectral")
 ## set y-axis
 ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
-plt.tick_params(axis='y', which='major', labelsize=14)
+plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.021'),fontsize=14)
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude', fontsize = 22)
-plt.tick_params(axis='x', which='major', labelsize=14)
+plt.xticks(np.arange(0.1,0.6,step=0.1), ('0.1', '0.2', '0.3', '0.4','0.5'),fontsize=14)
 plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
@@ -320,11 +328,12 @@ pcObject = ax.pcolormesh(x,y,z)
 plt.pcolormesh(x, y, z, cmap="Spectral")
 ## set y-axis
 ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
-plt.tick_params(axis='y', which='major', labelsize=14)
+# plt.tick_params(axis='y', which='major', labelsize=14)
+plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.021'),fontsize=14)
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude', fontsize = 22)
-plt.tick_params(axis='x', which='major', labelsize=14)
+plt.xticks(np.arange(0.1,0.6,step=0.1), ('0.1', '0.2', '0.3', '0.4','0.5'),fontsize=14)
 plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
@@ -351,11 +360,11 @@ pcObject = ax.pcolormesh(x,y,z)
 plt.pcolormesh(x, y, z, cmap="Spectral")
 ## set y-axis
 ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
-plt.tick_params(axis='y', which='major', labelsize=14)
+plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.021'),fontsize=14)
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude', fontsize = 22)
-plt.tick_params(axis='x', which='major', labelsize=14)
+plt.xticks(np.arange(0.1,0.6,step=0.1), ('0.1', '0.2', '0.3', '0.4','0.5'),fontsize=14)
 plt.xlim(0.1,0.5)
 ## colorbar
 cb = plt.colorbar()
