@@ -13,12 +13,11 @@ flag = 1 # 0 = BEM; 1 = MLM, # 2 = EDM
 intervention = 3 # 0 = competition intervention; 1 = demand BEM; 2 = demand EDM; 3= demand MLM
 competition = 0 # 0 = no intervention; 1 = intervention competition
 demand = 1 # 0 = no intervention; 1 = intervention demand
-migrate = 1 # 0 = use discrete function, 1 = use continuous function, 2 = use data
 
-# for competition int: 110101
-# for demand BEM: 011011
-# for demand EDM: 212011
-# for demand MLM: 113011
+# for competition int: 1010
+# for demand BEM: 0101
+# for demand EDM: 2201
+# for demand MLM: 1301
 
 ### Parameters #################################################################
 tmax = 35 # model run, years
@@ -104,7 +103,7 @@ for t in np.arange(0,tmax-10): # this assumes that by 2015 temperatures are high
 Tmin = min(T)
 Tmax = max(T)
 
-q = qc-(qc* ((T-Tmin)/(Tmax-Tmin)))
+q = qc-(qc* ((Tmax-T)/(Tmax-Tmin)))
 
 ### continuous migration
 xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
@@ -135,7 +134,7 @@ def model(a0, a1, a2, a3, k, l, qc, Tmin, Tmax, Mmax, Mmin, delta, alpha, i_e, t
         time = 1990 +t
 
         # catchability
-        q[t] = qc - (qc* ((T[t]-Tmin)/(Tmax-Tmin)))
+        q[t] = qc - (qc* ((Tmax-T[t])/(Tmax-Tmin)))
 
         if q[t] > qc: # check catchability is in bound and report
             q[t] = qc
@@ -387,7 +386,7 @@ f, = ax1.plot(dBRT, label = "Trader, BEM", color = 'orange', linestyle=':')
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-g, = ax2.plot(OUT3, color="slategrey", linewidth=2)
+g, = ax2.plot(OUT3, color="silver", linewidth=2)
 # x-axis
 plt.xlim(2,tmax)
 plt.xlabel("Year",fontsize=22, **hfont)
@@ -397,10 +396,10 @@ ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.set_ylim(-1E9,4E9)
 ax1.tick_params(axis='y', labelsize=12)
-ax2.set_ylabel("SST anomaly $^\circ C$", rotation=270, color='slategrey', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("SST anomaly $^\circ C$", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
-ax2.tick_params(axis='y', colors='slategrey', labelsize=12)
+ax2.tick_params(axis='y', colors='silver', labelsize=12)
 ax2.set_ylim(-1,19)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
@@ -418,7 +417,7 @@ b, = ax1.plot(cRT, label = "Trader, MLM", color = 'orange', linewidth=3)
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-c, = ax2.plot(OUT4, color="slategrey", linewidth=2)
+c, = ax2.plot(OUT4, color="silver", linewidth=2)
 # x-axis
 plt.xlim(2,tmax)
 plt.xlabel("Year",fontsize=22, **hfont)
@@ -428,10 +427,10 @@ ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.set_ylim(-.5E9,2.5E9)
 ax1.tick_params(axis='y', labelsize=12)
-ax2.set_ylabel("Proportion of migrated squid", rotation=270, color='slategrey', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("Proportion of migrated squid", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
-ax2.tick_params(axis='y', colors='slategrey', labelsize=12)
+ax2.tick_params(axis='y', colors='silver', labelsize=12)
 ax2.set_ylim(-0.5,2.5)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)

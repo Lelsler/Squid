@@ -88,7 +88,7 @@ for t in np.arange(0,tmax-10): # this assumes that by 2015 temperatures are high
 Tmin = min(T)
 Tmax = max(T)
 
-q = qc-(qc* ((T-Tmin)/(Tmax-Tmin)))
+q = qc-(qc* ((Tmax-T)/(Tmax-Tmin)))
 
 ### continuous migration
 xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
@@ -146,7 +146,7 @@ def model(a0, a1, a2, a3, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma
         T[t]= a0 +a1 *(t+1990) +a2 *np.cos(t+1990) + a3 *np.sin(t+1990)
 
         # catchability (mantle length)
-        q[t] = qc - (qc* ((T[t]-Tmin)/(Tmax-Tmin)))
+        q[t] = qc - (qc* ((Tmax-T[t])/(Tmax-Tmin)))
 
         if q[t] > qc: # check catchability is in bound and report
             q[t] = qc

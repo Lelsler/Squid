@@ -78,7 +78,7 @@ for t in np.arange(0,tmax): # this assumes that by 2025 temperatures are high so
 Tmin = min(T)
 Tmax = max(T)
 
-q = qc-(qc* ((T-Tmin)/(Tmax-Tmin)))
+q = qc-(qc* ((Tmax-T)/(Tmax-Tmin)))
 
 ### continuous migration
 xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
@@ -121,7 +121,7 @@ def model(a0, a1, a2, a3, k, l, qc, Tmin, Tmax, Mmax, Mmin, alpha, delta, g, K, 
         # mantle length and catchability
         if mantle == 0:
             if ml[t] == 1:
-                q[t] = qc - (qc* ((T[t]-Tmin)/(Tmax-Tmin)))
+                q[t] = qc - (qc* ((Tmax-T[t])/(Tmax-Tmin)))
             else:
                 ML[t]= ml[t]
                 q[t]= 0.0018 *ML[t] - 0.0318
@@ -384,7 +384,7 @@ ax1.fill_between(x, highBEM_pf, lowBEM_pf, where = highBEM_pf >= lowBEM_pf, face
 ax1.fill_between(x, highEDM_pf, lowEDM_pf, where = highEDM_pf >= lowEDM_pf, facecolor='sage', alpha= 0.3, zorder = 0)
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-line5, = ax2.plot(ys, color="dimgrey")
+line5, = ax2.plot(ys, color="silver")
 # x-axis
 ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 14)
 ax1.set_xlim(10,tmax-2)
@@ -395,10 +395,10 @@ ax2.set_xlabel("Year",fontsize=20, **hfont)
 # y-axis
 ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.tick_params(axis='y', labelsize=14)
-ax2.set_ylabel("Proportion migrated squid", rotation=270, color='dimgrey', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("Proportion migrated squid", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
-ax2.tick_params(axis='y', colors='dimgrey', labelsize=12)
+ax2.tick_params(axis='y', colors='silver', labelsize=12)
 ax2.set_ylim(0,1)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
@@ -420,7 +420,7 @@ ax1.fill_between(x, highBEM_C, lowBEM_C, where = highBEM_C >= lowBEM_C, facecolo
 ax1.fill_between(x, highEDM_C, lowEDM_C, where = highEDM_C >= lowEDM_C, facecolor='sage', alpha= 0.3, zorder = 0)
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-line5, = ax2.plot(ml, color="dimgrey")
+line5, = ax2.plot(ml, color="silver")
 # x-axis
 ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 14)
 ax1.set_xlim(10,tmax-2)
@@ -434,10 +434,10 @@ ax2.yaxis.set_label_position("right")
 ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.set_ylim(0,3E5)
 ax1.tick_params(axis='y', labelsize=14)
-ax2.set_ylabel("Mantle length $cm$", rotation=270, color='dimgrey', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("Mantle length $cm$", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
-ax2.tick_params(axis='y', colors='dimgrey', labelsize=12)
+ax2.tick_params(axis='y', colors='silver', labelsize=12)
 ax2.set_ylim(0,140)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
@@ -491,7 +491,7 @@ scipy.stats.pearsonr(VolAll[10:-1], meanEDM_C[10:-1])
 # ax1.fill_between(x, highP, lowP, where = highP >= lowP, facecolor='orange', alpha= 0.3, zorder = 0)
 # # add the second axes using subplot with ML
 # ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-# line3, = ax2.plot(ml, color="dimgrey")
+# line3, = ax2.plot(ml, color="silver")
 # # x-axis
 # ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
 # ax1.set_xlim(10,tmax-2)
@@ -501,7 +501,7 @@ scipy.stats.pearsonr(VolAll[10:-1], meanEDM_C[10:-1])
 # ax2.set_xlabel("Year",fontsize=20, **hfont)
 # # y-axis
 # ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='dimgrey', labelpad=22, fontsize=20, **hfont)
+# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 # plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # ax2.yaxis.tick_right()
 # ax2.yaxis.set_label_position("right")
@@ -520,7 +520,7 @@ scipy.stats.pearsonr(VolAll[10:-1], meanEDM_C[10:-1])
 # ax1.fill_between(x, highC, lowC, where = highC >= lowC, facecolor='orange', alpha= 0.3, zorder = 0)
 # # add the second axes using subplot with ML
 # ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-# line3, = ax2.plot(ml, color="dimgrey")
+# line3, = ax2.plot(ml, color="silver")
 # # x-axis
 # ax1.set_xticklabels(np.arange(2001,2016,2), rotation=45, fontsize= 12)
 # ax1.set_xlim(10,tmax-2)
@@ -532,7 +532,7 @@ scipy.stats.pearsonr(VolAll[10:-1], meanEDM_C[10:-1])
 # ax2.yaxis.set_label_position("right")
 # # y-axis
 # ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
-# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='dimgrey', labelpad=22, fontsize=20, **hfont)
+# ax2.set_ylabel("Mantle length $cm$", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 # plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # # legend
 # plt.legend([line1, line2, line3], ["Prediction", "Data", "Mantle length"], fontsize= 11)
