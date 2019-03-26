@@ -103,7 +103,7 @@ for t in np.arange(0,tmax-10): # this assumes that by 2015 temperatures are high
 Tmin = min(T)
 Tmax = max(T)
 
-q = qc-(qc* ((Tmax-T)/(Tmax-Tmin)))
+q = qc* ((Tmax-T)/(Tmax-Tmin))
 
 ### continuous migration
 xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
@@ -134,7 +134,7 @@ def model(a0, a1, a2, a3, k, l, qc, Tmin, Tmax, Mmax, Mmin, delta, alpha, i_e, t
         time = 1990 +t
 
         # catchability
-        q[t] = qc - (qc* ((Tmax-T[t])/(Tmax-Tmin)))
+        q[t] = qc* ((Tmax-T[t])/(Tmax-Tmin))
 
         if q[t] > qc: # check catchability is in bound and report
             q[t] = qc

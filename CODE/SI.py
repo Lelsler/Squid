@@ -38,22 +38,15 @@ pgy = df2['pf_gy'] # fishers price SR
 pre = df2['pf_re'] # fishers price Remaining offices
 
 # load data for optimization plots
-eff= np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_effort.npy")
-#! optimization effort
-df3 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/BEM_effort.xlsx', sheetname='Sheet1')
-efo = df3['bem_effort'] # effort optimization
-#! optimization catch
-df4 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/model_compare_C.xlsx', sheetname='Sheet1')
-bemc = df4['BEM'] # BEM catch predictions
-edmc = df4['EDM'] # EDM catch predictions
-mlmc = df4['MLM'] # MLM catch predictions
-datc = df4['Data'] # data
-#! optimization price
-df5 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/model_compare_pf.xlsx', sheetname='Sheet1')
-bemp = df5['BEM'] # BEM price predictions
-edmp = df5['EDM'] # EDM price predictions
-mlmp = df5['MLM'] # MLM price predictions
-datp = df5['Data'] # data
+df4 = pd.read_excel('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/model_compare.xlsx', sheetname='Sheet1')
+bemc = df4['CBEM'] # BEM catch predictions
+edmc = df4['CEDM'] # EDM catch predictions
+mlmc = df4['CMLM'] # MLM catch predictions
+datc = df4['CData'] # data
+bemp = df4['PfBEM'] # BEM price predictions
+edmp = df4['PfEDM'] # EDM price predictions
+mlmp = df4['PfMLM'] # MLM price predictions
+datp = df4['PfData'] # data
 
 ################################################################################
 ###########################  PLOT FILE   #######################################
@@ -112,7 +105,6 @@ line1, = ax1.plot(bemp, label = "BEM", color="steelblue", linewidth=2)
 line2, = ax1.plot(edmp, label = "EDM", color="sage", linewidth=2)
 line3, = ax1.plot(mlmp, label = "MLM", color="orange", linewidth=2)
 line4, = ax1.plot(datp, label = "Data", color="indianred", linewidth=2)
-line5, = ax1.plot(datc+5E5, label = "Data", color="white")
 # x-axis
 ax1.set_xticklabels(np.arange(1996,2017,5), rotation=45, fontsize= 12)# ax1.set_xlim(0,)
 # plt.xlabel("Year",fontsize=20, **hfont)

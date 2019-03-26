@@ -78,7 +78,7 @@ for t in np.arange(0,tmax): # this assumes that by 2025 temperatures are high so
 Tmin = min(T)
 Tmax = max(T)
 
-q = qc-(qc* ((Tmax-T)/(Tmax-Tmin)))
+q = qc* ((Tmax-T)/(Tmax-Tmin))
 
 ### continuous migration
 xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
@@ -121,12 +121,12 @@ def model(a0, a1, a2, a3, k, l, qc, Tmin, Tmax, Mmax, Mmin, alpha, delta, g, K, 
         # mantle length and catchability
         if mantle == 0:
             if ml[t] == 1:
-                q[t] = qc - (qc* ((Tmax-T[t])/(Tmax-Tmin)))
+                q[t] = qc* ((Tmax-T[t])/(Tmax-Tmin))
             else:
                 ML[t]= ml[t]
                 q[t]= 0.0018 *ML[t] - 0.0318
         if mantle == 1:
-            q[t] = qc - (qc* ((T[t]-Tmin)/(Tmax-Tmin)))
+            q[t] = qc* ((Tmax-T[t])/(Tmax-Tmin))
 
         if q[t] > 0.1:
             q[t] = 0.1
