@@ -105,6 +105,7 @@ line1, = ax1.plot(bemp, label = "BEM", color="steelblue", linewidth=2)
 line2, = ax1.plot(edmp, label = "EDM", color="sage", linewidth=2)
 line3, = ax1.plot(mlmp, label = "MLM", color="orange", linewidth=2)
 line4, = ax1.plot(datp, label = "Data", color="indianred", linewidth=2)
+line5, = ax1.plot(datc+5E5, label = "Data", color="indianred", linewidth=2)
 # x-axis
 ax1.set_xticklabels(np.arange(1996,2017,5), rotation=45, fontsize= 12)# ax1.set_xlim(0,)
 # plt.xlabel("Year",fontsize=20, **hfont)

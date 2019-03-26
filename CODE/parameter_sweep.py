@@ -29,6 +29,7 @@ a0 = -40.9079 # intersection y
 a1 = 0.020464 # trend
 a2 = 0.165387 # periodicity
 a3 = -0.287384 # periodicity
+a4 = 1 # amplitude control
 # catchability
 k = -0.0318 # catchability slope
 l = 0.0018 # catchability intersect
