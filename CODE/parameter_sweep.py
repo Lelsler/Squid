@@ -78,27 +78,29 @@ ys = df1['M_new'] # migration data from long catch timeseries
 ssh = df1['sst_anom'] # SST anomaly
 
 ### catchability scaling
-def translate(a0, a1, a2, a3, qc):
+def translate(a0, a1, a2, a3, a4, qc):
     for t in np.arange(0,tmax-10): # this assumes that by 2025 temperatures are high so that q = 0
-        L[t]= a0 +a1 *(t+1990) +a2 *np.cos(t+1990) + a3 *np.sin(t+1990)
+        L[t]= a0 +a1 *(t+1990) +a4* (a2 *np.cos(t+1990) + a3 *np.sin(t+1990))
     return L
 
 for t in np.arange(0,tmax-10): # this assumes that by 2015 temperatures are high so that q = 0
-     T = translate(a0, a1, a2, a3, qc)
+     T = translate(a0, a1, a2, a3, a4, qc)
 
 Tmin = min(T)
 Tmax = max(T)
 
 q = qc* ((Tmax-T)/(Tmax-Tmin))
+plt.plot(q)
+plt.show()
 
 ### continuous migration
 xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
 ye = np.zeros(1000) # array to fill in migration calculations
 xe = np.zeros(1000)
-ko = np.exp(lamda*(a2*np.cos(xo)-a3*np.sin(xo)))
+ko = np.exp(lamda*(a4*(a2*np.cos(xo)-a3*np.sin(xo))))
 alpha = 1/max(ko)
 for i in np.arange(0,1000):
-    ye[i] = alpha* np.exp(lamda*(a2*np.cos(xo[i])-a3*np.sin(xo[i])))
+    ye[i] = alpha* np.exp(lamda*(a4*(a2*np.cos(xo[i])-a3*np.sin(xo[i]))))
     if ye[i] > 0.9:
          xe[i] = xo[i]
 
@@ -107,30 +109,31 @@ Mmin = min(ye)
 
 xe = np.around(xe, decimals=0)
 plt.plot(xo,ye)
-# plt.show()
+plt.show()
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
 ################################################################################
 
 ### Define Model ###############################################################
-def model(a0, a1, a2, a3, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda):
+def model(a0, a1, a2, a3, a4, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda):
 
     ### continuous migration
     xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
     ye = np.zeros(1000) # array to fill in migration calculations
     xe = np.zeros(1000)
     # supplementary re-scale migration
-    # ko = np.exp(lamda*(a2*np.cos(xo)-a3*np.sin(xo)))
-    # alpha = 1/max(ko)
+    ko = np.exp(lamda*(a4*(a2*np.cos(xo)-a3*np.sin(xo))))
+    alpha = 1/max(ko)
     for i in np.arange(0,1000):
-        ye[i] = alpha* np.exp(lamda*(a2*np.cos(xo[i])-a3*np.sin(xo[i])))
+        ye[i] = alpha* np.exp(lamda*(a4*(a2*np.cos(xo[i])-a3*np.sin(xo[i]))))
         if ye[i] > 0.9:
              xe[i] = xo[i]
 
     # supplementary re-scale migration
-    # Mmax = max(ye)
-    # Mmin = min(ye)
+    Mmax = max(ye)
+    Mmin = min(ye)
+    xe = np.around(xe, decimals=0)
 
     if Mmax > 1:
         Mmax = 1
@@ -144,7 +147,7 @@ def model(a0, a1, a2, a3, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma
     for t in np.arange(1,tmax):
         time = t + 1990
         ##### sst anomaly trend
-        T[t]= a0 +a1 *(t+1990) +a2 *np.cos(t+1990) + a3 *np.sin(t+1990)
+        T[t]= a0 +a1 *(t+1990) +a4* (a2 *np.cos(t+1990) + a3 *np.sin(t+1990))
 
         # catchability (mantle length)
         q[t] = qc* ((Tmax-T[t])/(Tmax-Tmin))
@@ -237,27 +240,27 @@ def model(a0, a1, a2, a3, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma
 ################################################################################
 
 ##### Run the model ############################################################
-a1 = np.arange(0.0195,0.021,0.0000075) # trens. steps to test a1 parameter
-a3 = np.arange(0.1,0.5,0.002) # amplitude. steps to test a3 parameter
+a1 = np.arange(0.0195,0.021,0.0000075) # trend. steps to test a1 parameter
+a4 = np.arange(0.1,1.5,0.005) # amplitude. steps to test a4 parameter
 
 ##### Initiate arrays ##########################################################
-cat = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save catches in each time period of each simulation
-pri = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save prices for fishers in each time period of each simulation
-mar = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save market prices in each time period of each simulation
-gap1 = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save price gap mean in each time period of each simulation
-gap2 = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save price gap stdv in each time period of each simulation
-gap3 = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save icnome gap mean in each time period of each simulation
-tem = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save T in each time period of each simulation
-mig = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save migrate squid in each time period of each simulation
-cco = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save catchability in each time period of each simulation
-pop = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save squid population in each time period of each simulation
-eff = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save effort in each time period of each simulation
-rff = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save revenue fishers in each time period of each simulation
-rtt = np.zeros((a1.shape[0],a3.shape[0])) # matrix to save revenue traders in each time period of each simulation
+cat = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save catches in each time period of each simulation
+pri = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save prices for fishers in each time period of each simulation
+mar = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save market prices in each time period of each simulation
+gap1 = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save price gap mean in each time period of each simulation
+gap2 = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save price gap stdv in each time period of each simulation
+gap3 = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save icnome gap mean in each time period of each simulation
+tem = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save T in each time period of each simulation
+mig = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save migrate squid in each time period of each simulation
+cco = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save catchability in each time period of each simulation
+pop = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save squid population in each time period of each simulation
+eff = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save effort in each time period of each simulation
+rff = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save revenue fishers in each time period of each simulation
+rtt = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save revenue traders in each time period of each simulation
 
 for i in np.arange(0,a1.shape[0]):
-    for j in np.arange(0,a3.shape[0]):
-        T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1[i], a2, a3[j], Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda)
+    for j in np.arange(0,a4.shape[0]):
+        T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1[i], a2, a3, a4[j], Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda)
 
         gap1[i,j]= np.mean(p_f/p_m)
         gap2[i,j]= np.std(p_f/p_m)
@@ -292,7 +295,7 @@ for i in np.arange(0,a1.shape[0]):
 ##### Plot 1 ###################################################################
 ## define dimensions
 y = a1 #  y axis
-x = a3 #  x axis
+x = a4 #  x axis
 z = gap1 #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -306,21 +309,21 @@ plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude', fontsize = 22)
-plt.xticks(np.arange(0.1,0.6,step=0.1), ('0.1', '0.2', '0.3', '0.4','0.5'),fontsize=14)
-plt.xlim(0.1,0.5)
+plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
+plt.xlim(0.5,1.5)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Mean price gap', rotation=270, labelpad=40, fontsize = 22)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_gap.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_SI_gap.png",dpi=500)
 plt.show()
 
 
 ## define dimensions
 y = a1 #  y axis
-x = a3 #  x axis
-z = rff #  output data
+x = a4 #  x axis
+z = cat #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=0.15,left=0.15,right=0.9)
@@ -334,14 +337,14 @@ plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude', fontsize = 22)
-plt.xticks(np.arange(0.1,0.6,step=0.1), ('0.1', '0.2', '0.3', '0.4','0.5'),fontsize=14)
-plt.xlim(0.1,0.5)
+plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
+plt.xlim(0.5,1.5)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Fishers income $MXN$', rotation=270, labelpad=40, fontsize = 22)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_RF.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_SI_RF.png",dpi=500)
 plt.show()
 
 
@@ -351,7 +354,7 @@ plt.show()
 
 ## define dimensions
 y = a1 #  y axis
-x = a3 #  x axis
+x = a4 #  x axis
 z = cat #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
@@ -365,8 +368,8 @@ plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude', fontsize = 22)
-plt.xticks(np.arange(0.1,0.6,step=0.1), ('0.1', '0.2', '0.3', '0.4','0.5'),fontsize=14)
-plt.xlim(0.1,0.5)
+plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
+plt.xlim(0.5,1.5)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22)
@@ -391,7 +394,7 @@ plt.show()
 # OUT9 = np.zeros(T.shape[0])
 #
 # for i in np.arange(0,tmax):
-#     T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1, a2, a3, k, l, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda)
+#     T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1, a2, a3, a4, k, l, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda)
 #     OUT1[i]= p_f[i]
 #     OUT2[i]= C[i]
 #     OUT3[i]= T[i]
