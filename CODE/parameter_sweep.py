@@ -123,16 +123,16 @@ def model(a0, a1, a2, a3, a4, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, g
     ye = np.zeros(1000) # array to fill in migration calculations
     xe = np.zeros(1000)
     # supplementary re-scale migration
-    ko = np.exp(lamda*(a4*(a2*np.cos(xo)-a3*np.sin(xo))))
-    alpha = 1/max(ko)
+    # ko = np.exp(lamda*(a4*(a2*np.cos(xo)-a3*np.sin(xo))))
+    # alpha = 1/max(ko)
     for i in np.arange(0,1000):
         ye[i] = alpha* np.exp(lamda*(a4*(a2*np.cos(xo[i])-a3*np.sin(xo[i]))))
         if ye[i] > 0.9:
              xe[i] = xo[i]
 
     # supplementary re-scale migration
-    Mmax = max(ye)
-    Mmin = min(ye)
+    # Mmax = max(ye)
+    # Mmin = min(ye)
     xe = np.around(xe, decimals=0)
 
     if Mmax > 1:
@@ -291,6 +291,7 @@ for i in np.arange(0,a1.shape[0]):
 # pri = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_pf.npy")
 # cat = np.load("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/parameter_sweep_C.npy")
 
+hfont = {'fontname':'Helvetica'}
 
 ##### Plot 1 ###################################################################
 ## define dimensions
@@ -304,26 +305,26 @@ ax = fig1.add_subplot(gs[0,0])
 pcObject = ax.pcolormesh(x,y,z)
 plt.pcolormesh(x, y, z, cmap="Spectral")
 ## set y-axis
-ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
+ax.set_ylabel('Trend SST anomalies $^\circ C$', fontsize = 22, **hfont)
 plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.021'),fontsize=14)
 plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude', fontsize = 22)
+ax.set_xlabel('Amplitude  SST anomalies $^\circ C$', fontsize = 22, **hfont)
 plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
 plt.xlim(0.5,1.5)
 ## colorbar
 cb = plt.colorbar()
-cb.set_label('Mean price gap', rotation=270, labelpad=40, fontsize = 22)
+cb.set_label('Mean price gap', rotation=270, labelpad=40, fontsize = 22, **hfont)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_SI_gap.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_gap.png",dpi=500)
 plt.show()
 
 
 ## define dimensions
 y = a1 #  y axis
 x = a4 #  x axis
-z = cat #  output data
+z = rff #  output data
 ## sub plot
 fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=0.15,left=0.15,right=0.9)
@@ -331,20 +332,20 @@ ax = fig1.add_subplot(gs[0,0])
 pcObject = ax.pcolormesh(x,y,z)
 plt.pcolormesh(x, y, z, cmap="Spectral")
 ## set y-axis
-ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
+ax.set_ylabel('Trend of SST anomalies $^\circ C$', fontsize = 22, **hfont)
 # plt.tick_params(axis='y', which='major', labelsize=14)
 plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.021'),fontsize=14)
 plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude', fontsize = 22)
+ax.set_xlabel('Amplitude of SST anomalies $^\circ C$', fontsize = 22, **hfont)
 plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
 plt.xlim(0.5,1.5)
 ## colorbar
 cb = plt.colorbar()
-cb.set_label('Fishers income $MXN$', rotation=270, labelpad=40, fontsize = 22)
+cb.set_label('Fishers income $MXN$', rotation=270, labelpad=40, fontsize = 22, **hfont)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_SI_RF.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_RF.png",dpi=500)
 plt.show()
 
 
@@ -363,19 +364,19 @@ ax = fig1.add_subplot(gs[0,0])
 pcObject = ax.pcolormesh(x,y,z)
 plt.pcolormesh(x, y, z, cmap="Spectral")
 ## set y-axis
-ax.set_ylabel('Trend $^\circ C$', fontsize = 22)
+ax.set_ylabel('Trend SST anomalies $^\circ C$', fontsize = 22, **hfont)
 plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.021'),fontsize=14)
 plt.ylim(0.0195,0.021)
 ## set x-axis
-ax.set_xlabel('Amplitude', fontsize = 22)
+ax.set_xlabel('Amplitude SST anomalies $^\circ C$', fontsize = 22, **hfont)
 plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
 plt.xlim(0.5,1.5)
 ## colorbar
 cb = plt.colorbar()
-cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22)
+cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22, **hfont)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_SI_C.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_C.png",dpi=500)
 plt.show()
 
 

@@ -312,35 +312,35 @@ ax2.tick_params(axis='y', colors='lightgrey')
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.legend(handles=[a,b,d], loc='best', fontsize=14)
 # load and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_support2.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_support2.png',dpi=300)
 plt.show()
 
 
 ##### Save data  ###############################################################
-if intervention == 0: # intervention competition
-    print "intervention competition"
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_pe.npy", OUT8)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_RF.npy", OUT10)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_RT.npy", OUT11)
-if intervention == 1: # intervention demand BEM
-    print "intervention demand BEM"
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_pe.npy", OUT8)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_RF.npy", OUT10)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_RT.npy", OUT11)
-if intervention == 2: # intervention demand EDM
-    print "intervention demand EDM"
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_pe.npy", OUT8)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_RF.npy", OUT10)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_RT.npy", OUT11)
-if intervention == 3: # intervention demand MLM
-    print "intervention demand MLM"
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_pf.npy", OUT1)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_pe.npy", OUT8)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_RF.npy", OUT10)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_RT.npy", OUT11)
+# if intervention == 0: # intervention competition
+#     print "intervention competition"
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_pf.npy", OUT1)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_pe.npy", OUT8)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_RF.npy", OUT10)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_MLM_RT.npy", OUT11)
+# if intervention == 1: # intervention demand BEM
+#     print "intervention demand BEM"
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_pf.npy", OUT1)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_pe.npy", OUT8)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_RF.npy", OUT10)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_BEM_RT.npy", OUT11)
+# if intervention == 2: # intervention demand EDM
+#     print "intervention demand EDM"
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_pf.npy", OUT1)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_pe.npy", OUT8)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_RF.npy", OUT10)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_EDM_RT.npy", OUT11)
+# if intervention == 3: # intervention demand MLM
+#     print "intervention demand MLM"
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_pf.npy", OUT1)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_pe.npy", OUT8)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_RF.npy", OUT10)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/intervention_gamma_MLM_RT.npy", OUT11)
 
 ################################################################################
 ###########################  PLOT FILE  ########################################
@@ -389,23 +389,23 @@ ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
 g, = ax2.plot(OUT3, color="silver", linewidth=2)
 # x-axis
 plt.xlim(2,tmax)
-plt.xlabel("Year",fontsize=22, **hfont)
+# plt.xlabel("Year",fontsize=22, **hfont)
 ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 # y-axis
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.set_ylim(-1E9,4E9)
-ax1.tick_params(axis='y', labelsize=12)
+ax1.tick_params(axis='y', labelsize=14)
 ax2.set_ylabel("SST anomaly $^\circ C$", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
-ax2.tick_params(axis='y', colors='silver', labelsize=12)
+ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(-1,19)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.legend(handles=[a,b,c,e], loc=2, fontsize=14)
 # load and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_demand.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_demand.png',dpi=300)
 plt.show()
 
 
@@ -420,21 +420,21 @@ ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
 c, = ax2.plot(OUT4, color="silver", linewidth=2)
 # x-axis
 plt.xlim(2,tmax)
-plt.xlabel("Year",fontsize=22, **hfont)
+# plt.xlabel("Year",fontsize=22, **hfont)
 ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 # y-axis
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.set_ylim(-.5E9,2.5E9)
-ax1.tick_params(axis='y', labelsize=12)
-ax2.set_ylabel("Proportion of migrated squid", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
+ax1.tick_params(axis='y', labelsize=14)
+ax2.set_ylabel("Squid landed outside the GOC", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
-ax2.tick_params(axis='y', colors='silver', labelsize=12)
+ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(-0.5,2.5)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.legend(handles=[a,b], loc='best', fontsize=14)
 # load and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_competition.png',dpi=500)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_competition.png',dpi=300)
 plt.show()
