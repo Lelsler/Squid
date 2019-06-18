@@ -76,23 +76,23 @@ line1, = ax1.plot(cat1, label = "Catch", color = "sage", linewidth=3)
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
 line2, = ax2.plot(sstx, color="grey", linewidth=3)
 # x-axis
-ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize= 14)
+ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize=14)
 # ax1.set_xlim(0,len(cat1))
-ax2.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize= 14)
+ax2.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize=14)
 # ax2.set_xlim(0,len(sstx))
 # y-axis
 ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=22, **hfont)
-ax1.set_yticklabels(np.arange(0,1.4,.2), rotation=45, fontsize= 14, minor =False)
+ax1.set_yticklabels(np.arange(0,1.4,.2), rotation=45, fontsize=14, minor =False)
 ax2.set_ylabel("SST anomalies $^\circ$C", rotation=270, color='black', labelpad=22, fontsize=22, **hfont)
 ax2.set_ylim(-2,1.5)
-ax2.set_yticklabels(np.arange(-2,1.5,0.5), fontsize= 14)
+ax2.set_yticklabels(np.arange(-2,1.5,0.5), fontsize=14)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 # legend
-# plt.legend([line1, line2], ["Catch", "SST anomaly"], fontsize= 12)
+# plt.legend([line1, line2], ["Catch", "SST anomaly"], fontsize=14)
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_sstcatch.pdf',dpi=300)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_sstcatch.pdf',dpi=300)
 plt.show()
 
 
@@ -102,20 +102,20 @@ fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=5,left=5,right=0.9)
 # add the first axes using subplot
 ax1 = fig1.add_subplot(111)
-line1, = ax1.plot(bemc, label = "BEM", color="steelblue")
+line1, = ax1.plot(bemc, label = "BEM", color="steelblue",linewidth =2)
 line2, = ax1.plot(edmc, label = "EDM", color="sage", linewidth=3)
-line3, = ax1.plot(mlmc, label = "MLM", color="orange")
-line4, = ax1.plot(datc, label = "Data", color="indianred", linewidth =2)
+line3, = ax1.plot(mlmc, label = "MLM", color="orange",linewidth =2)
+line4, = ax1.plot(datc, label = "Data", color="indianred",linewidth =2)
 # x-axis
-ax1.set_xticklabels(np.arange(1996,2017,5), rotation=45, fontsize= 15)
-plt.yticks(fontsize= 15, rotation=45)
-# plt.xlabel("Year",fontsize=20, **hfont)
+ax1.set_xticklabels(np.arange(1996,2017,5), rotation=45, fontsize=14)
+plt.xticks(fontsize=14, rotation=45)
+# plt.xlabel("Year",fontsize=22, **hfont)
 # y-axis
-plt.ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
+plt.ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=22, **hfont)
 # legend
-plt.legend([line1, line2,line3,line4], ["BEM","EDM","MLM","Data"], fontsize= 12)
+plt.legend([line1, line2,line3,line4], ["BEM","EDM","MLM","Data"], fontsize=14)
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_optic.pdf',dpi=300)
+# fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_optic.pdf',dpi=300)
 plt.show()
 
 #! optimization fishers price
@@ -129,16 +129,16 @@ line3, = ax1.plot(mlmp, label = "MLM", color="orange", linewidth=2)
 line4, = ax1.plot(datp, label = "Data", color="indianred", linewidth=2)
 line5, = ax1.plot(datc+5E5, label = "Data", color="indianred", linewidth=2)
 # x-axis
-ax1.set_xticklabels(np.arange(1996,2017,5), rotation=45, fontsize= 15)# ax1.set_xlim(0,)
+ax1.set_xticklabels(np.arange(1996,2017,5), rotation=45, fontsize=14)# ax1.set_xlim(0,)
 # plt.xlabel("Year",fontsize=20, **hfont)
 # y-axis
-plt.ylabel("Fishers' price $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
+plt.ylabel("Fishers' price $MXN$", rotation=90, labelpad=5, fontsize=22, **hfont)
 ax1.set_ylim(0,3.5E4)
-plt.yticks(fontsize= 15, rotation=45)
+plt.yticks(fontsize=14, rotation=45)
 # legend
-plt.legend([line1, line2,line3,line4], ["BEM","EDM","MLM","Data"], loc='best', fontsize= 12)
+plt.legend([line1, line2,line3,line4], ["BEM","EDM","MLM","Data"], loc='best', fontsize=14)
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_optipf.pdf',dpi=300)
+# fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_optipf.pdf',dpi=300)
 plt.show()
 
 ############## SI STATES #######################################################
@@ -151,16 +151,16 @@ line1, = ax1.plot(cat, label = "Total", color="black", linewidth=2)
 line2, = ax1.plot(cg, label = "Guaymas", color = "blue", linewidth=2)
 line3, = ax1.plot(cs, label = "Santa Rosalia", color = "red", linewidth=2)
 # x-axis
-ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize= 15)
+ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize=14)
 # ax1.set_xlim(0,)
-# plt.xlabel("Year",fontsize=20, **hfont)
+# plt.xlabel("Year",fontsize=22, **hfont)
 # y-axis
-plt.ylabel("Catches $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
-plt.yticks(fontsize= 15, rotation=45)
+plt.ylabel("Catches $tons$", rotation=90, labelpad=5, fontsize=22, **hfont)
+plt.yticks(fontsize=14, rotation=45)
 # legend
-plt.legend([line1, line2, line3], ["Total", "Guaymas", "Santa Rosalia"], fontsize= 11)
+plt.legend([line1, line2, line3], ["Total", "Guaymas", "Santa Rosalia"], fontsize=14)
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_catch.pdf',dpi=300)
+# fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_catch.pdf',dpi=300)
 plt.show()
 
 ### fishers price
@@ -172,16 +172,16 @@ line1, = ax1.plot(pg, label = "Guaymas", color = "blue", linewidth=2)
 line2, = ax1.plot(ps, label = "Santa Rosalia", color = "red", linewidth=2)
 line3, = ax1.plot(pr, label = "Other offices", color="black", linewidth=2)
 # x-axis
-ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize= 15)
+ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize=14)
 ax1.set_xlim(0,len(yr))
-# plt.xlabel("Year",fontsize=20, **hfont)
+# plt.xlabel("Year",fontsize=22, **hfont)
 # y-axis
-plt.ylabel("Fishers' price $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
-plt.yticks(fontsize= 15, rotation=45)
+plt.ylabel("Fishers' price $MXN$", rotation=90, labelpad=5, fontsize=22, **hfont)
+plt.yticks(fontsize=14, rotation=45)
 # legend
-plt.legend([line3, line2, line1], ["Remaining offices", "Guaymas", "Santa Rosalia"], fontsize= 11, loc="best")
+plt.legend([line3, line2, line1], ["Remaining offices", "Guaymas", "Santa Rosalia"], fontsize=14, loc="best")
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_price.pdf',dpi=300)
+# fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_price.pdf',dpi=300)
 plt.show()
 
 ### mantle length
@@ -191,13 +191,13 @@ gs = gridspec.GridSpec(1,1,bottom=0.15,left=0.15,right=0.9)
 ax1 = fig1.add_subplot(111)
 line1, = ax1.plot(ml[5:], color = "black", linewidth=2)
 # x-axis
-ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize= 15)
+ax1.set_xticklabels(np.arange(1991,2017,5), rotation=45, fontsize=14)
 ax1.set_xlim(0,len(yr))
 # y-axis
-plt.ylabel("Mantle length $cm$", rotation=90, labelpad=5, fontsize=20, **hfont)
-plt.yticks(fontsize= 15, rotation=45)
+plt.ylabel("Mantle length $cm$", rotation=90, labelpad=5, fontsize=22, **hfont)
+plt.yticks(fontsize=14, rotation=45)
 # save and show
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_ML.pdf',dpi=300)
+# fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_ML.pdf',dpi=300)
 plt.show()
 
 ### sst anomaly
@@ -206,16 +206,16 @@ gs = gridspec.GridSpec(1,1,bottom=0.15,left=0.15,right=0.9)
 # add the first axes using subplot
 ax1 = fig1.add_subplot(111)
 ax2 = fig1.add_subplot(111)
-ax1.scatter(yr1,sst, s= 30, c='black', marker='.', label='Measurements', linewidth=2)
+ax1.scatter(yr1,sst, s= 50, c='black', marker='.', label='Measurements', linewidth=2)
 ax2.plot(yr1,ssta, c='red', linestyle='-', label='Yearly average', linewidth=2)
 # axis
-ax1.set_xticklabels(np.arange(1975,2025,5), rotation=45, fontsize= 15)
-ax2.set_xticklabels(np.arange(1975,2025,5), rotation=45, fontsize= 15)
+ax1.set_xticklabels(np.arange(1980,2025,5), rotation=45, fontsize=14)
+ax2.set_xticklabels(np.arange(1980,2025,5), rotation=45, fontsize=14)
 # ax1.set_xlim(0,len(yr1)+12)
-plt.ylabel("SST anomalies $^\circ$C", rotation=90, labelpad=5, fontsize=20, **hfont)
-plt.yticks(fontsize= 15, rotation=45)
-plt.legend(loc="best", fontsize=15)
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_sst.pdf',dpi=300)
+plt.ylabel("SST anomalies $^\circ$C", rotation=90, labelpad=5, fontsize=22, **hfont)
+plt.yticks(fontsize=14, rotation=45)
+plt.legend(loc="best", fontsize=14)
+# fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_sst.pdf',dpi=300)
 plt.show()
 
 ############## SI PRICES #######################################################
@@ -226,17 +226,17 @@ fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=0.15,left=0.15,right=0.9)
 # add the first axes using subplot
 ax1 = fig1.add_subplot(111)
-ax1.scatter(cs,ps, s= 30, c='red', marker='o', label='Santa Rosalia')
-ax1.scatter(cg,pg, s= 30, c='blue', marker='o', label='Guaymas')
-ax1.scatter(cr,pr, s= 30, c='black', marker='o', label='Remaining offices')
+ax1.scatter(cs,ps, s= 50, c='red', marker='o', label='Santa Rosalia')
+ax1.scatter(cg,pg, s= 50, c='blue', marker='o', label='Guaymas')
+ax1.scatter(cr,pr, s= 50, c='black', marker='o', label='Remaining offices')
 # axis
 ax1.set_xlim(0,5E4)
-plt.xlabel("Catch $tons$",fontsize=20)
-plt.xticks(fontsize= 15)
-plt.ylabel("Fishers' price $MXN$",fontsize=20)
-plt.yticks(fontsize= 15, rotation=45)
-plt.legend(loc="best", fontsize=12);
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_scatterprice.pdf',dpi=300)
+plt.xlabel("Catch $tons$",fontsize=22)
+plt.xticks(fontsize=14)
+plt.ylabel("Fishers' price $MXN$",fontsize=22)
+plt.yticks(fontsize=14, rotation=45)
+plt.legend(loc="best", fontsize=14);
+# fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_scatterprice.pdf',dpi=300)
 plt.show()
 
 #! price gap
@@ -246,15 +246,15 @@ fig1 = plt.figure(figsize=[9,6])
 gs = gridspec.GridSpec(1,1,bottom=0.2,left=0.15,right=0.9)
 # add the first axes using subplot
 ax1 = fig1.add_subplot(111)
-ax1.scatter(pm, psr, s=30, c='red', marker="o", label='Santa Rosalia')
-ax1.scatter(pm, pgy, s=30, c='blue', marker="o", label='Guaymas')
-ax1.scatter(pm, pre, s=30, c='black', marker="o", label='Remaining offices')
+ax1.scatter(pm, psr, s=50, c='red', marker="o", label='Santa Rosalia')
+ax1.scatter(pm, pgy, s=50, c='blue', marker="o", label='Guaymas')
+ax1.scatter(pm, pre, s=50, c='black', marker="o", label='Remaining offices')
 # plt.xlim(20, 80)
-plt.xlabel("Export price $MXN$",fontsize=20)
-plt.xticks(fontsize= 15)
+plt.xlabel("Export price $MXN$",fontsize=22)
+plt.xticks(fontsize=14)
 # plt.ylim(0, 130E3)
-plt.ylabel("Fishers' price $MXN$",fontsize=20)
-plt.yticks(fontsize= 15, rotation=45)
-plt.legend(loc="best", fontsize=12);
-fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_pmpe.pdf',dpi=300)
+plt.ylabel("Fishers' price $MXN$",fontsize=22)
+plt.yticks(fontsize=14, rotation=45)
+plt.legend(loc="best", fontsize=14);
+fig1.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/SI_pmpe.pdf',dpi=300)
 plt.show()

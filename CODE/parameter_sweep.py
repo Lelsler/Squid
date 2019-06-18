@@ -317,7 +317,7 @@ cb = plt.colorbar()
 cb.set_label('Mean price gap', rotation=270, labelpad=40, fontsize = 22, **hfont)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_gap.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_gap.png",dpi=300)
 plt.show()
 
 
@@ -345,7 +345,7 @@ cb = plt.colorbar()
 cb.set_label('Fishers income $MXN$', rotation=270, labelpad=40, fontsize = 22, **hfont)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_RF.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_RF.png",dpi=300)
 plt.show()
 
 
@@ -376,7 +376,7 @@ cb = plt.colorbar()
 cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22, **hfont)
 cb.ax.tick_params(labelsize=12)
 ## save and show
-# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_C.png",dpi=500)
+# fig1.savefig("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/parameter_C.png",dpi=300)
 plt.show()
 
 

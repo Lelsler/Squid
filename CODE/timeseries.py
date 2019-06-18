@@ -395,7 +395,7 @@ ax2.set_xlabel("Year",fontsize=20, **hfont)
 # y-axis
 ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.tick_params(axis='y', labelsize=14)
-ax2.set_ylabel("Squid landed outside the GOC", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
+ax2.set_ylabel("% Pacific landed squid", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 ax2.tick_params(axis='y', colors='silver', labelsize=14)
@@ -404,7 +404,7 @@ plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
 plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], loc=2, fontsize= 12)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.png',dpi=300)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.pdf',dpi=300)
 plt.show()
 
 fig = plt.figure()
@@ -443,7 +443,7 @@ plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
 plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], loc=1, fontsize= 12)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.png',dpi=300)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.pdf',dpi=300)
 plt.show()
 
 ### CALCULATE r squared ########################################################
