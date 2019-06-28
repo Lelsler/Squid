@@ -6,6 +6,7 @@ import seaborn as sns
 import pandas as pd
 import scipy
 from pandas import *
+from scipy import signal
 
 #################### CHOICES ###################################################
 flag = 1 # 0 = BEM; 1 = MLM, # 2 = EDM
@@ -70,7 +71,6 @@ G = np.zeros(tmax) # pay gap between fishers and traders
 ### interventions ###
 F = np.zeros(tmax) # intercept of traders cooperation
 
-
 ### Initial values #############################################################
 T[0] = -0.80 # for SSTres
 q[0] = 0.05 # squid catchability
@@ -106,22 +106,21 @@ Tmax = max(T)
 q = qc* ((Tmax-T)/(Tmax-Tmin))
 
 ### continuous migration
-xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
-ye = np.zeros(1000) # array to fill in migration calculations
-xe = np.zeros(1000)
-ko = np.exp(lamda*(a2*np.cos(xo)-a3*np.sin(xo)))
+xx = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
+zz = np.zeros(1000) # array to fill in migration calculations
+ko = np.exp(lamda*(a2*np.cos(xx)-a3*np.sin(xx)))
 alpha = 1/max(ko)
 for i in np.arange(0,1000):
-    ye[i] = alpha * np.exp(lamda*(a2*np.cos(xo[i])-a3*np.sin(xo[i])))
-    if ye[i] > 0.9:
-         xe[i] = xo[i]
+    zz[i] = alpha * np.exp(lamda*(a2*np.cos(xx[i])-a3*np.sin(xx[i])))
 
-Mmax = max(ye)
-Mmin = min(ye)
+peaks, _ = signal.find_peaks(z)
 
-xe = np.around(xe, decimals=0)
-plt.plot(xo,ye) # migration timeseries
-# plt.show()
+xx = np.around(xx, decimals=0)
+x= xx[peaks]
+z= zz[peaks]
+
+plt.plot(x,z) # migration timeseries
+plt.show()
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
@@ -144,8 +143,9 @@ def model(a0, a1, a2, a3, k, l, qc, Tmin, Tmax, Mmax, Mmin, delta, alpha, i_e, t
             print "q low"
 
         # migration of squid
-        if any(time == xe):
-            M[t] = Mmax
+        if any(time == x):
+            
+            #M[t] = Mmax
         else:
             M[t] = Mmin # run with continuous function
 
