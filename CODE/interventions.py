@@ -38,6 +38,7 @@ a0 = -40.9079 # intersection y
 a1 = 0.020464 # trend
 a2 = 0.165387 # periodicity
 a3 = -0.287384 # periodicity
+a4 = 1 # amplitude - unlike for the other models we need an a4 parameter here to change the amplitude across sin and cos
 # catchability
 k = -0.0318 # catchability slope
 l = 0.0018 # catchability intersect
@@ -50,7 +51,6 @@ delta = 1 # slope of trader cooperation
 ### interventions ###
 i_e = 0.1 # increment of decrease in traders cooperation per unit investment
 timeInt = 15 # year to start intervention
-
 
 ### Variables ##################################################################
 T = np.zeros(tmax) # temperature
@@ -93,12 +93,12 @@ ys = df1['M_new'] # migration data from long catch timeseries
 
 ####### Pre calculations ########################################################
 ### catchability scaling
-def translate(a0, a1, a2, a3, qc):
-    T[t]= a0 +a1 *(t+1990) +a2 *np.cos(t+1990) + a3 *np.sin(t+1990)
+def translate(a0, a1, a2, a3, a4, qc):
+    T[t]= a0 +a1 *(t+1990) +a4* (a2 *np.cos(t+1990) + a3 *np.sin(t+1990)) # temperature function
     return T
 
 for t in np.arange(0,tmax-10): # this assumes that by 2015 temperatures are high so that q = 0
-     T = translate(a0, a1, a2, a3, qc)
+     T = translate(a0, a1, a2, a3, a4, qc)
 
 Tmin = min(T)
 Tmax = max(T)
@@ -106,55 +106,56 @@ Tmax = max(T)
 q = qc* ((Tmax-T)/(Tmax-Tmin))
 
 ### continuous migration
-xx = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
+# this set-up assumes that the proportion of migrated squid is triggered by an environmental signal, the proportion is contingent on the strength (i.e. amplitude) of the signal
+xx = np.linspace(1991,2025,1000) # 100 linearly spaced time steps in 35 years
 zz = np.zeros(1000) # array to fill in migration calculations
-ko = np.exp(lamda*(a2*np.cos(xx)-a3*np.sin(xx)))
-alpha = 1/max(ko)
+ko = np.exp(lamda*(a2*np.cos(xx)-a3*np.sin(xx))) # calculate the alpha parameter
+alpha = 1/max(ko) # calculate the alpha parameter
 for i in np.arange(0,1000):
-    zz[i] = alpha * np.exp(lamda*(a2*np.cos(xx[i])-a3*np.sin(xx[i])))
+    zz[i] = alpha * np.exp(lamda*a4*(a2*np.cos(xx[i])-a3*np.sin(xx[i]))) # run migration timeseries
 
-peaks, _ = signal.find_peaks(z)
-
-xx = np.around(xx, decimals=0)
-x= xx[peaks]
-z= zz[peaks]
-
-plt.plot(x,z) # migration timeseries
+plt.plot(zz)
 plt.show()
+
+peaks, _ = signal.find_peaks(zz) # extract peaks from migration timeseries
+
+xx = np.around(xx, decimals=0) # remove decimals from years
+x= xx[peaks] # keep only peak years
+z= zz[peaks] # keep only peak values
+print z, x
+
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
 ################################################################################
 
 ### Define Model ###############################################################
-def model(a0, a1, a2, a3, k, l, qc, Tmin, Tmax, Mmax, Mmin, delta, alpha, i_e, timeInt, g, K, h1, h2, gamma, beta, kappa, sigma):
+def model(a0, a1, a2, a3, a4, k, l, qc, Tmin, Tmax, delta, alpha, i_e, timeInt, g, K, h1, h2, gamma, beta, kappa, sigma):
     for t in np.arange(1,tmax):
-        T[t]= a0 +a1 *(t+1990) +a2 *np.cos(t+1990) + a3 *np.sin(t+1990)
+        T[t]= a0 +a1 *(t+1990) +a4* (a2 *np.cos(t+1990) + a3 *np.sin(t+1990))
         time = 1990 +t
 
         # catchability
         q[t] = qc* ((Tmax-T[t])/(Tmax-Tmin))
+        print q[t]
 
         if q[t] > qc: # check catchability is in bound and report
             q[t] = qc
-            print "q high"
+            print "q high" # we do not expect any high q
         elif q[t] < 0:
             q[t] = 0
-            print "q low"
+            print "q low" # we expect low q: Tmax is calculated for the year 2015
 
         # migration of squid
-        if any(time == x):
-            
-            #M[t] = Mmax
+        if any(time == x): # if the current year and a year of migration correspond
+            lo = np.where(time == x)
+            M[t] = z[lo] # use the migration value of a given year
         else:
-            M[t] = Mmin # run with continuous function
+            M[t] = 0 # else set migration to a minimum
 
         if M[t] > 1:
             M[t] = 1
             print "M high"
-        elif M[t] < 0:
-            M[t] = 0
-            print "M low"
 
         ## trader cooperation intervention
         if t <= timeInt:
@@ -251,7 +252,7 @@ OUT11 = np.zeros(T.shape[0])
 
 ##### Run the model ############################################################
 for i in np.arange(1,tmax):
-        T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1, a2, a3, k, l, qc, Tmin, Tmax, Mmax, Mmin, delta, alpha, i_e, timeInt, g, K, h1, h2, gamma, beta, kappa, sigma)
+        T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1, a2, a3, a4, k, l, qc, Tmin, Tmax, delta, alpha, i_e, timeInt, g, K, h1, h2, gamma, beta, kappa, sigma)
         OUT1[i]= p_f[i]
         OUT2[i]= C[i]
         OUT3[i]= T[i]
@@ -377,12 +378,12 @@ yr = np.arange(1990,2025,1)
 # begin plotting demand intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(dMRF, label = "Fisher, MLM", color = 'steelblue', linestyle='-', linewidth=3)
-b, = ax1.plot(dMRT, label = "Trader, MLM", color = 'orange', linestyle='-', linewidth=3)
+a, = ax1.plot(dMRF, label = "MLM", color = 'steelblue', linestyle='-', linewidth=3)
+b, = ax1.plot(dMRT, label = "MLM", color = 'orange', linestyle='-', linewidth=3)
 c, = ax1.plot(dLRF, label = "EDM", color = 'steelblue', linestyle='--')
-d, = ax1.plot(dLRT, label = "Trader, EDM", color = 'orange', linestyle='--')
+d, = ax1.plot(dLRT, label = "EDM", color = 'orange', linestyle='--')
 e, = ax1.plot(dBRF, label = "BEM", color = 'steelblue', linestyle=':')
-f, = ax1.plot(dBRT, label = "Trader, BEM", color = 'orange', linestyle=':')
+f, = ax1.plot(dBRT, label = "BEM", color = 'orange', linestyle=':')
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
@@ -394,7 +395,7 @@ ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 # y-axis
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=22, **hfont)
-ax1.set_ylim(-1E9,4E9)
+ax1.set_ylim(-.5E9,3.5E9)
 ax1.tick_params(axis='y', labelsize=14)
 ax2.set_ylabel("SST anomaly $^\circ C$", rotation=270, color='silver', labelpad=22, fontsize=22, **hfont)
 ax2.yaxis.tick_right()
@@ -403,7 +404,7 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(-1,19)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.legend(handles=[a,b,c,e], loc=2, fontsize=14)
+plt.legend(handles=[b,d,f], loc=2, fontsize=14)
 # load and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_demand.pdf',dpi=300)
 plt.show()
@@ -412,8 +413,8 @@ plt.show()
 # begin plotting competition intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(cRF, label = "Fisher, MLM", color = 'steelblue', linewidth=3)
-b, = ax1.plot(cRT, label = "Trader, MLM", color = 'orange', linewidth=3)
+a, = ax1.plot(cRF, label = "Fisher", color = 'steelblue', linewidth=3)
+b, = ax1.plot(cRT, label = "Trader", color = 'orange', linewidth=3)
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)

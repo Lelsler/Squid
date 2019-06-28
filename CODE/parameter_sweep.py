@@ -6,6 +6,7 @@ import seaborn as sns
 import pandas as pd
 from scipy import stats
 from pandas import *
+from scipy import signal
 
 #### Model w/o relationships ###################################################
 flag = 1 # 0 = BEM; 1 = MLM, # 2 = BLM
@@ -36,9 +37,9 @@ l = 0.0018 # catchability intersect
 qc = 0.1 # catchability constant
 # migration
 lamda = 100
+alpha = 3.9798459165637236e-15
 # trader cooperation
 delta = 1 # slope of trader cooperation
-
 
 ### Variables ##################################################################
 T = np.zeros(tmax) # temperature
@@ -90,59 +91,41 @@ Tmin = min(T)
 Tmax = max(T)
 
 q = qc* ((Tmax-T)/(Tmax-Tmin))
-plt.plot(q)
-plt.show()
 
 ### continuous migration
-xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
-ye = np.zeros(1000) # array to fill in migration calculations
-xe = np.zeros(1000)
-ko = np.exp(lamda*(a4*(a2*np.cos(xo)-a3*np.sin(xo))))
-alpha = 1/max(ko)
-for i in np.arange(0,1000):
-    ye[i] = alpha* np.exp(lamda*(a4*(a2*np.cos(xo[i])-a3*np.sin(xo[i]))))
-    if ye[i] > 0.9:
-         xe[i] = xo[i]
-
-Mmax = max(ye)
-Mmin = min(ye)
-
-xe = np.around(xe, decimals=0)
-plt.plot(xo,ye)
-plt.show()
+# this set-up assumes that the proportion of migrated squid is triggered by an environmental signal, the proportion is contingent on the strength (i.e. amplitude) of the signal
+xx = np.linspace(1991,2025,1000) # 100 linearly spaced time steps in 35 years
+# zz = np.zeros(1000) # array to fill in migration calculations
+ko = np.exp(lamda*(a2*np.cos(xx)-a3*np.sin(xx))) # calculate the alpha parameter
+alpha = 1/max(ko) # calculate the alpha parameter
+# for i in np.arange(0,1000):
+#     zz[i] = alpha * np.exp(lamda*a4*(a2*np.cos(xx[i])-a3*np.sin(xx[i]))) # run migration timeseries
+#
+# peaks, _ = signal.find_peaks(zz) # extract peaks from migration timeseries
+#
+# xx = np.around(xx, decimals=0) # remove decimals from years
+# x= xx[peaks] # keep only peak years
+# z= zz[peaks] # keep only peak values
 
 ################################################################################
 ###########################  MODEL FILE  #######################################
 ################################################################################
 
 ### Define Model ###############################################################
-def model(a0, a1, a2, a3, a4, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda):
-
-    ### continuous migration
-    xo = np.linspace(1991,2025,1000) # 100 linearly spaced numbers, time
-    ye = np.zeros(1000) # array to fill in migration calculations
-    xe = np.zeros(1000)
-    # supplementary re-scale migration
-    # ko = np.exp(lamda*(a4*(a2*np.cos(xo)-a3*np.sin(xo))))
-    # alpha = 1/max(ko)
+def model(a0, a1, a2, a3, a4, Tmin, Tmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda):
+    # continuous migration
+    xx = np.linspace(1991,2025,1000) # 100 linearly spaced time steps in 35 years
+    zz = np.zeros(1000) # array to fill in migration calculations
+    # ko = np.exp(lamda*a4*(a2*np.cos(xx)-a3*np.sin(xx))) # calculate the alpha parameter
+    # alpha = 1/max(ko) # calculate the alpha parameter
     for i in np.arange(0,1000):
-        ye[i] = alpha* np.exp(lamda*(a4*(a2*np.cos(xo[i])-a3*np.sin(xo[i]))))
-        if ye[i] > 0.9:
-             xe[i] = xo[i]
+        zz[i] = alpha * np.exp(lamda*a4*(a2*np.cos(xx[i])-a3*np.sin(xx[i]))) # run migration timeseries
 
-    # supplementary re-scale migration
-    # Mmax = max(ye)
-    # Mmin = min(ye)
-    xe = np.around(xe, decimals=0)
+    peaks, _ = signal.find_peaks(zz) # extract peaks from migration timeseries
 
-    if Mmax > 1:
-        Mmax = 1
-        print "M high"
-    elif Mmin < 0:
-        Mmin = 0
-        print "M low"
-
-    xe = np.around(xe, decimals=0)
+    xx = np.around(xx, decimals=0) # remove decimals from years
+    x= xx[peaks] # keep only peak years
+    z= zz[peaks] # keep only peak values
 
     for t in np.arange(1,tmax):
         time = t + 1990
@@ -152,25 +135,20 @@ def model(a0, a1, a2, a3, a4, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, g
         # catchability (mantle length)
         q[t] = qc* ((Tmax-T[t])/(Tmax-Tmin))
 
-        if q[t] > qc: # check catchability is in bound and report
+        if q[t] > qc: # check catchability is in bound - we do not report because we expect high and low values by changing a1 and a4
             q[t] = qc
-            print "q high"
         elif q[t] < 0:
             q[t] = 0
-            print "q low"
 
         # migration of squid
-        if any(time == xe):
-            M[t] = Mmax
+        if any(time == x): # if the current year and a year of migration correspond
+            lo = np.where(time == x)
+            M[t] = z[lo] # use the migration value of a given year
         else:
-            M[t] = Mmin # run with continuous function
+            M[t] = 0 # else set migration to a minimum
 
         if M[t] > 1:
             M[t] = 1
-            print "M high"
-        elif M[t] < 0:
-            M[t] = 0
-            print "M low"
 
         ##### trader cooperation
         R[t]= np.exp(-delta* M[t])
@@ -241,7 +219,7 @@ def model(a0, a1, a2, a3, a4, Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, g
 
 ##### Run the model ############################################################
 a1 = np.arange(0.0195,0.021,0.0000075) # trend. steps to test a1 parameter
-a4 = np.arange(0.1,1.5,0.005) # amplitude. steps to test a4 parameter
+a4 = np.arange(0.9,1.1,0.001) # amplitude. steps to test a4 parameter
 
 ##### Initiate arrays ##########################################################
 cat = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save catches in each time period of each simulation
@@ -260,7 +238,7 @@ rtt = np.zeros((a1.shape[0],a4.shape[0])) # matrix to save revenue traders in ea
 
 for i in np.arange(0,a1.shape[0]):
     for j in np.arange(0,a4.shape[0]):
-        T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1[i], a2, a3, a4[j], Tmin, Tmax, Mmin, Mmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda)
+        T, ML, q, M, R, S, E, C, p_m, p_f, I_f, I_t, G = model(a0, a1[i], a2, a3, a4[j], Tmin, Tmax, qc, delta, g, K, h1, h2, gamma, beta, kappa, sigma, alpha, lamda)
 
         gap1[i,j]= np.mean(p_f/p_m)
         gap2[i,j]= np.std(p_f/p_m)
@@ -310,8 +288,8 @@ plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude  SST anomalies $^\circ C$', fontsize = 22, **hfont)
-plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
-plt.xlim(0.5,1.5)
+plt.xticks(np.arange(0.9,1.2,step=0.05), ('0.9', '0.95', '1.0', '1.05', '1.1'),fontsize=14)
+plt.xlim(0.9,1.1)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Mean price gap', rotation=270, labelpad=40, fontsize = 22, **hfont)
@@ -338,8 +316,8 @@ plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude of SST anomalies $^\circ C$', fontsize = 22, **hfont)
-plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
-plt.xlim(0.5,1.5)
+plt.xticks(np.arange(0.9,1.2,step=0.05), ('0.9', '0.95', '1.0', '1.05', '1.1'),fontsize=14)
+plt.xlim(0.9,1.1)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Fishers income $MXN$', rotation=270, labelpad=40, fontsize = 22, **hfont)
@@ -369,8 +347,8 @@ plt.yticks(np.arange(0.0195,0.021,step=0.0005), ('0.0195', '0.02', '0.0205', '0.
 plt.ylim(0.0195,0.021)
 ## set x-axis
 ax.set_xlabel('Amplitude SST anomalies $^\circ C$', fontsize = 22, **hfont)
-plt.xticks(np.arange(0.5,1.6,step=0.2), ('0.5', '0.7', '0.9', '1.1', '1.3', '1.5'),fontsize=14)
-plt.xlim(0.5,1.5)
+plt.xticks(np.arange(0.9,1.2,step=0.05), ('0.9', '0.95', '1.0', '1.05', '1.1'),fontsize=14)
+plt.xlim(0.9,1.1)
 ## colorbar
 cb = plt.colorbar()
 cb.set_label('Catches $tons$', rotation=270, labelpad=40, fontsize = 22, **hfont)
