@@ -311,30 +311,30 @@ for h in range(0,yr.shape[0]): # calculate the 95% confidence interval
 
 
 ### Save data  ###############################################################
-if flag == 0:
-    print "bem save"
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_BEM_lowC.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_BEM_highC.npy", highC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_BEM_meanC.npy", meanC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_BEM_lowP.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_BEM_highP.npy", highP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_BEM_meanP.npy", meanP)
-if flag == 1:
-    print "mlm save"
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_MLM_lowC.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_MLM_highC.npy", highC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_MLM_meanC.npy", meanC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_MLM_lowP.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_MLM_highP.npy", highP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_MLM_meanP.npy", meanP)
-if flag == 2:
-    print "edm save"
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_lowC.npy", lowC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_highC.npy", highC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_meanC.npy", meanC)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_EDM_lowP.npy", lowP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_EDM_highP.npy", highP)
-    np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_EDM_meanP.npy", meanP)
+# if flag == 0:
+#     print "bem save"
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_BEM_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_BEM_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_BEM_meanC.npy", meanC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_BEM_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_BEM_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_BEM_meanP.npy", meanP)
+# if flag == 1:
+#     print "mlm save"
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_MLM_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_MLM_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_MLM_meanC.npy", meanC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_MLM_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_MLM_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_MLM_meanP.npy", meanP)
+# if flag == 2:
+#     print "edm save"
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_lowC.npy", lowC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_highC.npy", highC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_catch_95_EDM_meanC.npy", meanC)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_EDM_lowP.npy", lowP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_EDM_highP.npy", highP)
+#     np.save("./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/DATA/ts_price_95_EDM_meanP.npy", meanP)
 
 ################################################################################
 ###########################  PLOT FILE  ########################################
@@ -375,7 +375,7 @@ fig = plt.figure()
 fig.subplots_adjust(bottom=0.15, left= 0.15)
 # add the first axes using subplot populated with predictions
 ax1 = fig.add_subplot(111)
-line1, = ax1.plot(meanMLM_P, label = "MLM", color="orange")
+line1, = ax1.plot(meanMLM_P, label = "SES", color="orange")
 line2, = ax1.plot(meanEDM_P, label = "EDM", color="sage")
 line3, = ax1.plot(meanBEM_P, label = "BEM", color="steelblue")
 line4, = ax1.plot(PrAll, label = "data", color = "indianred", linewidth=4)
@@ -402,16 +402,16 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(0,1)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
-plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], loc=2, fontsize= 12)
+plt.legend([line1, line2, line3, line4], ["SES", "EDM", "BEM", "Data"], loc=2, fontsize= 12)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.pdf',dpi=300)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.png',dpi=300)
 plt.show()
 
 fig = plt.figure()
 fig.subplots_adjust(bottom=0.15, left= 0.15)
 # add the first axes using subplot populated with predictions
 ax1 = fig.add_subplot(111)
-line1, = ax1.plot(meanMLM_C, label = "MLM", color="orange")
+line1, = ax1.plot(meanMLM_C, label = "SES", color="orange")
 line2, = ax1.plot(meanEDM_C, label = "EDM", color="sage")
 line3, = ax1.plot(meanBEM_C, label = "BEM", color="steelblue")
 line4, = ax1.plot(VolAll, label = "data", color = "indianred", linewidth=4)
@@ -441,9 +441,9 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(0,140)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
-plt.legend([line1, line2, line3, line4], ["MLM", "EDM", "BEM", "Data"], loc=1, fontsize= 12)
+plt.legend([line1, line2, line3, line4], ["SES", "EDM", "BEM", "Data"], loc=1, fontsize= 12)
 # save and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.pdf',dpi=300)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.png',dpi=300)
 plt.show()
 
 ### CALCULATE r squared ########################################################

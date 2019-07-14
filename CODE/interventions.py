@@ -378,12 +378,12 @@ yr = np.arange(1990,2025,1)
 # begin plotting demand intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(dMRF, label = "MLM", color = 'steelblue', linestyle='-', linewidth=3)
-b, = ax1.plot(dMRT, label = "MLM", color = 'orange', linestyle='-', linewidth=3)
-c, = ax1.plot(dLRF, label = "EDM", color = 'steelblue', linestyle='--')
-d, = ax1.plot(dLRT, label = "EDM", color = 'orange', linestyle='--')
-e, = ax1.plot(dBRF, label = "BEM", color = 'steelblue', linestyle=':')
-f, = ax1.plot(dBRT, label = "BEM", color = 'orange', linestyle=':')
+a, = ax1.plot(dMRF, label = "SES", color = 'orange', linestyle='-', linewidth=3)
+b, = ax1.plot(dMRT, label = "SES", color = 'orange', linestyle='--', linewidth=3)
+# c, = ax1.plot(dLRF, label = "EDM", color = 'steelblue', linestyle='--')
+# d, = ax1.plot(dLRT, label = "EDM", color = 'orange', linestyle='--')
+e, = ax1.plot(dBRF, label = "BEM", color = 'steelblue', linestyle='-', linewidth=3)
+f, = ax1.plot(dBRT, label = "BEM", color = 'steelblue', linestyle='--', linewidth=3)
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
@@ -404,17 +404,17 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(-1,19)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.legend(handles=[b,d,f], loc=2, fontsize=14)
+plt.legend(handles=[a,e], loc=2, fontsize=14)
 # load and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_demand.pdf',dpi=300)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_demand.png',dpi=300)
 plt.show()
 
 
 # begin plotting competition intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(cRF, label = "Fisher", color = 'steelblue', linewidth=3)
-b, = ax1.plot(cRT, label = "Trader", color = 'orange', linewidth=3)
+a, = ax1.plot(cRF, label = "Fishers", color = 'orange', linewidth=3)
+b, = ax1.plot(cRT, label = "traders", color = 'orange', linestyle='--', linewidth=3)
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
@@ -437,5 +437,5 @@ ax2.set_ylim(-0.5,2.5)
 plt.gcf().subplots_adjust(bottom=0.15)
 plt.legend(handles=[a,b], loc='best', fontsize=14)
 # load and show
-# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_competition.pdf',dpi=300)
+# fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_competition.png',dpi=300)
 plt.show()
