@@ -375,7 +375,7 @@ fig = plt.figure()
 fig.subplots_adjust(bottom=0.15, left= 0.15)
 # add the first axes using subplot populated with predictions
 ax1 = fig.add_subplot(111)
-line1, = ax1.plot(meanMLM_P, label = "SES", color="orange")
+line1, = ax1.plot(meanMLM_P, label = "SEM", color="orange") # note name change from MLM to SEM
 line2, = ax1.plot(meanEDM_P, label = "EDM", color="sage")
 line3, = ax1.plot(meanBEM_P, label = "BEM", color="steelblue")
 line4, = ax1.plot(PrAll, label = "data", color = "indianred", linewidth=4)
@@ -395,6 +395,7 @@ ax2.set_xlabel("Year",fontsize=20, **hfont)
 # y-axis
 ax1.set_ylabel("Prices for fishers $MXN$", rotation=90, labelpad=5, fontsize=20, **hfont)
 ax1.tick_params(axis='y', labelsize=14)
+ax1.set_ylim(0,3.5E4)
 ax2.set_ylabel("% Pacific landed squid", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
@@ -402,7 +403,7 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(0,1)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
-plt.legend([line1, line2, line3, line4], ["SES", "EDM", "BEM", "Data"], loc=2, fontsize= 12)
+plt.legend([line5, line3, line2, line1, line4], ["Pacific landed squid", "BEM", "EDM", "SEM", "Data"], loc=2, fontsize= 14)
 # save and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_price.png',dpi=300)
 plt.show()
@@ -411,7 +412,7 @@ fig = plt.figure()
 fig.subplots_adjust(bottom=0.15, left= 0.15)
 # add the first axes using subplot populated with predictions
 ax1 = fig.add_subplot(111)
-line1, = ax1.plot(meanMLM_C, label = "SES", color="orange")
+line1, = ax1.plot(meanMLM_C, label = "SEM", color="orange") # note MLM changed to SEM
 line2, = ax1.plot(meanEDM_C, label = "EDM", color="sage")
 line3, = ax1.plot(meanBEM_C, label = "BEM", color="steelblue")
 line4, = ax1.plot(VolAll, label = "data", color = "indianred", linewidth=4)
@@ -432,7 +433,7 @@ ax2.yaxis.tick_right()
 ax2.yaxis.set_label_position("right")
 # y-axis
 ax1.set_ylabel("Catch $tons$", rotation=90, labelpad=5, fontsize=20, **hfont)
-ax1.set_ylim(0,3E5)
+ax1.set_ylim(0,3.5E5)
 ax1.tick_params(axis='y', labelsize=14)
 ax2.set_ylabel("Mantle length $cm$", rotation=270, color='silver', labelpad=22, fontsize=20, **hfont)
 ax2.yaxis.tick_right()
@@ -441,7 +442,7 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(0,140)
 plt.gcf().subplots_adjust(bottom=0.15,right=0.9)
 # legend
-plt.legend([line1, line2, line3, line4], ["SES", "EDM", "BEM", "Data"], loc=1, fontsize= 12)
+plt.legend([line5, line3, line2, line1, line4], ["Mantle length", "BEM", "EDM", "SEM", "Data"], loc=1, fontsize= 14)
 # save and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/ts_catch.png',dpi=300)
 plt.show()

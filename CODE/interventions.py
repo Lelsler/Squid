@@ -378,16 +378,16 @@ yr = np.arange(1990,2025,1)
 # begin plotting demand intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(dMRF, label = "SES", color = 'orange', linestyle='-', linewidth=3)
-b, = ax1.plot(dMRT, label = "SES", color = 'orange', linestyle='--', linewidth=3)
+a, = ax1.plot(dMRF, label = "SEM fishers", color = 'orange', linestyle='-', linewidth=3) # change in name MLM to SEM
+b, = ax1.plot(dMRT, label = "SEM traders", color = 'orange', linestyle='--', linewidth=3)
 # c, = ax1.plot(dLRF, label = "EDM", color = 'steelblue', linestyle='--')
 # d, = ax1.plot(dLRT, label = "EDM", color = 'orange', linestyle='--')
-e, = ax1.plot(dBRF, label = "BEM", color = 'steelblue', linestyle='-', linewidth=3)
-f, = ax1.plot(dBRT, label = "BEM", color = 'steelblue', linestyle='--', linewidth=3)
+e, = ax1.plot(dBRF, label = "BEM fishers", color = 'steelblue', linestyle='-', linewidth=3)
+f, = ax1.plot(dBRT, label = "BEM traders", color = 'steelblue', linestyle='--', linewidth=3)
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-g, = ax2.plot(OUT3, color="silver", linewidth=2)
+g, = ax2.plot(OUT3, label = "SST anomaly", color="silver", linewidth=2)
 # x-axis
 plt.xlim(2,tmax)
 # plt.xlabel("Year",fontsize=22, **hfont)
@@ -395,7 +395,7 @@ ax1.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 ax2.set_xticklabels(np.arange(1990,2035,5), rotation=45, fontsize= 14)
 # y-axis
 ax1.set_ylabel("Income $MXN$", rotation=90, labelpad=5, fontsize=22, **hfont)
-ax1.set_ylim(-.5E9,3.5E9)
+ax1.set_ylim(-.5E9,4E9)
 ax1.tick_params(axis='y', labelsize=14)
 ax2.set_ylabel("SST anomaly $^\circ C$", rotation=270, color='silver', labelpad=22, fontsize=22, **hfont)
 ax2.yaxis.tick_right()
@@ -404,7 +404,7 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(-1,19)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.legend(handles=[a,e], loc=2, fontsize=14)
+plt.legend(handles=[g,a,b,e,f], loc=2, fontsize=14)
 # load and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_demand.png',dpi=300)
 plt.show()
@@ -413,12 +413,12 @@ plt.show()
 # begin plotting competition intervention
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-a, = ax1.plot(cRF, label = "Fishers", color = 'orange', linewidth=3)
-b, = ax1.plot(cRT, label = "traders", color = 'orange', linestyle='--', linewidth=3)
+a, = ax1.plot(cRF, label = "SEM fishers", color = 'orange', linewidth=3)
+b, = ax1.plot(cRT, label = "SEM traders", color = 'orange', linestyle='--', linewidth=3)
 # x-axis
 # add the second axes using subplot with ML
 ax2 = fig.add_subplot(111, sharex=ax1, frameon=False)
-c, = ax2.plot(OUT4, color="silver", linewidth=2)
+c, = ax2.plot(OUT4, label="Pacific landed squid", color="silver", linewidth=2)
 # x-axis
 plt.xlim(2,tmax)
 # plt.xlabel("Year",fontsize=22, **hfont)
@@ -435,7 +435,7 @@ ax2.tick_params(axis='y', colors='silver', labelsize=14)
 ax2.set_ylim(-0.5,2.5)
 # adjusting labels and plot size
 plt.gcf().subplots_adjust(bottom=0.15)
-plt.legend(handles=[a,b], loc='best', fontsize=14)
+plt.legend(handles=[c,a,b], loc='best', fontsize=14)
 # load and show
 # fig.savefig('./Dropbox/PhD/Resources/Squid/Squid/CODE/Squid/FIGS/intervention_competition.png',dpi=300)
 plt.show()
