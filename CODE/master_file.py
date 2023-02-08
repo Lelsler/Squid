@@ -109,13 +109,6 @@ def model(b1, b2, b3, n1, n2, l1, l2, a1, g, K, m, f, B_h, B_f, h1, h2, gamma, b
 ###############################  RUN MODEL FILE  ###############################
 ################################################################################
 
-#### Import packages ###########################################################
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
-import pandas as pd
-
 #### model w/o relationships ###################################################
 flag = 0 # 0 = NoR model; 1 = Rmodel
 
