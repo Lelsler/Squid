@@ -1,3 +1,6 @@
+# this file contains parameter values, variable initial values
+# Dr Laura Gabriele Elsler
+
 #### Import packages ###########################################################
 import numpy as np
 import matplotlib.pyplot as plt
