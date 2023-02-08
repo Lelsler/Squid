@@ -1,3 +1,6 @@
+# this file generates the price difference (export-beach price) for two interventions: increase demand and increase competition between traders 
+# Dr Laura Gabriele Elsler
+
 #### Import packages ###########################################################
 import numpy as np
 import matplotlib.pyplot as plt
