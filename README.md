@@ -20,7 +20,7 @@ Here's a quick run down of the files that assemble the input data and where this
     FIGURES - A folder containing all figures from the article and SI tables (parameter values, datasets)
 
 
-ComTrade files containing the squid market price data are very large (>500MB) and are not included in the repository. Please email Laura Elsler (l.elsler AT outlook.com) to request access to these files.
+ComTrade and Squid fishery landings data files containing the squid market price and catch volumes are very large (>500MB) and are not included in the repository. Please email Laura Elsler (l.elsler AT outlook.com) to request access to these files.
 
 Acknowledgment: First and foremost, we are grateful to our interviewees and the fishery participants for their time and for sharing their knowledge about the squid fishery. We extend our thanks in the field to the MAREA team that was instrumental in introducing L.G.E. to Mexican small-scale fisheries. We thank dataMares and Universidad Nacional Aut ́ onoma de M ́ exico (UNAM) for sharing fishery data. We also thank our colleagues for technical help, comments, and discussion of the manuscript: F. Diekert, J. Norberg, R. Blasiak, J. Gars, I. Fetzer, K. Arroyo-Ramirez, U. Markaida, and M. Oostdijk.
 
