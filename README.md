@@ -17,7 +17,7 @@ Here's a quick run down of the files that assemble the input data and where this
 
     DATA - A folder containing the raw data, the code used to process the raw data, and the data generated from the processing
     
-    FIGURES - A folder containing the figures from the article 
+    FIGURES - A folder containing all figures from the article and SI tables (parameter values, datasets)
 
 
 ComTrade files containing the squid market price data are very large (>500MB) and are not included in the repository. Please email Laura Elsler (l.elsler AT outlook.com) to request access to these files.
